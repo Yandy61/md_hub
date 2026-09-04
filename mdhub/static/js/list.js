@@ -86,4 +86,6 @@
 
   filterBox.addEventListener("input", render);
   load();
+  // 轮询：目录新增/删除文件、源丢失与恢复自动反映
+  setInterval(load, 4000);
 })();
