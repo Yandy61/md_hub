@@ -78,4 +78,10 @@ assert(P.docBase === "/doc/7/docs/sub/", "docBase 应为当前文档目录");
 const P0 = MdRender.apiParts("/doc/7/");
 assert(P0.docUrl === "/api/doc/7/" && P0.assetPrefix === "/api/asset/7/" && P0.docBase === "/doc/7/", "根文档各 URL 正确");
 
+// 公式下划线转义（KaTeX \text{} 内 `_` 非法 → ParseError 显示原文，code-review 后用户反馈回归锁）
+const esc = MdRender.escapeUnderscoreInText("\\text{set_password} + \\text{a_b_c}");
+assert(esc === "\\text{set\\_password} + \\text{a\\_b\\_c}", "\\text{} 内下划线应转义");
+assert(MdRender.escapeUnderscoreInText("\\text{无下划线}") === "\\text{无下划线}", "无下划线不应改动");
+assert(MdRender.escapeUnderscoreInText("x_y 外部不动") === "x_y 外部不动", "text 块外不应改动");
+
 console.log("render smoke: all assertions passed");

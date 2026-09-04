@@ -9,6 +9,7 @@
 <body>
   <div class="topbar">
     <span class="brand"><a href="/">MarkdownHub</a></span>
+    <span class="spacer"></span>
     <input type="search" id="filter" placeholder="按文件名过滤…" autocomplete="off">
     <div id="admin-box">
       <form id="login-form" hidden>
@@ -19,11 +20,11 @@
       </form>
       <div id="admin-actions" hidden>
         <form id="entry-form" style="display:inline">
-          <input type="text" id="entry-path" placeholder="输入文件或目录的绝对路径" size="30">
+          <input type="text" id="entry-path" placeholder="输入文件或目录的绝对路径" size="28">
           <button type="submit">添加索引</button>
         </form>
         <form id="file-form" style="display:inline">
-          <input type="text" id="file-name" placeholder="新建文件名（如 notes/xx.md）" size="24">
+          <input type="text" id="file-name" placeholder="新建文件名（如 notes/xx.md）" size="22">
           <button type="submit">新建文件</button>
           <span id="entry-msg"></span>
         </form>

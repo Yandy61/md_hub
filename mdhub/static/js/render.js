@@ -82,10 +82,45 @@
   // 渲染后的后处理：mermaid 代码块转图表容器、KaTeX 渲染公式。
   // 在浏览器里调用（依赖 window.mermaid / window.renderMathInElement）；
   // node 冒烟环境不注入这两个全局，函数自动跳过。
+  var mermaidInited = false;
+
+  function initMermaid() {
+    if (mermaidInited || !window.mermaid) return;
+    var font = '-apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
+    window.mermaid.initialize({
+      startOnLoad: false,          // 渲染时机由 enhance() 控制
+      theme: "base",
+      fontFamily: font,
+      themeVariables: {
+        fontFamily: font,
+        fontSize: "14px",
+        primaryColor: "#eef2ff",       // 节点底色：淡靛蓝
+        primaryTextColor: "#1f2328",
+        primaryBorderColor: "#c7d2fe",
+        lineColor: "#94a3b8",
+        secondaryColor: "#f6f8fa",
+        tertiaryColor: "#ffffff",
+        noteBkgColor: "#fffbeb",
+        noteBorderColor: "#fde68a",
+      },
+      flowchart: { curve: "basis", padding: 12, nodeSpacing: 40, rankSpacing: 44 },
+    });
+    mermaidInited = true;
+  }
+
+  // KaTeX 的 \text{} 里 `_` 非法（ParseError → 显示原文）。markdown 已把 \_ 吃成 _，
+  // 这里在解析前把 \text{...} 内部的 _ 转回 \_。
+  function escapeUnderscoreInText(math) {
+    return math.replace(/\\text\s*\{([^{}]*)\}/g, function (m, inner) {
+      return "\\text{" + inner.replace(/_/g, "\\_") + "}";
+    });
+  }
+
   function enhance(el) {
     var hasMermaid = typeof window !== "undefined" && window.mermaid;
     var hasKatex = typeof window !== "undefined" && window.renderMathInElement;
     if (hasMermaid) {
+      initMermaid();
       var blocks = el.querySelectorAll("pre code.language-mermaid");
       blocks.forEach(function (b) {
         var div = document.createElement("div");
@@ -105,6 +140,7 @@
             { left: "\\(", right: "\\)", display: false },
           ],
           throwOnError: false,
+          preProcess: escapeUnderscoreInText,
         });
       } catch (e) { /* ignore */ }
     }
@@ -116,6 +152,7 @@
     assetUrl: assetUrl,
     enhance: enhance,
     apiParts: apiParts,
+    escapeUnderscoreInText: escapeUnderscoreInText,
   };
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;   // node 冒烟脚本

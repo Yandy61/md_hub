@@ -4,18 +4,36 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MarkdownHub</title>
+  <script>
+    // 首帧前应用已保存的主题，避免闪烁（localStorage 读失败则用默认）
+    (function () {
+      try {
+        var t = localStorage.getItem("mdhub-theme");
+        if (t) document.documentElement.setAttribute("data-theme-apply", t);
+      } catch (e) {}
+    })();
+  </script>
   <link rel="stylesheet" href="/static/css/mdhub.css">
   <link rel="stylesheet" href="/static/vendor/hljs-github.css">
   <link rel="stylesheet" href="/static/vendor/katex.min.css">
   <link rel="stylesheet" href="/static/vendor/codemirror.css">
 </head>
-<body>
+<body data-mdtheme="clean">
   <div class="topbar">
     <span class="brand"><a href="/">MarkdownHub</a></span>
     <span class="doc-path" id="doc-path"></span>
+    <span class="spacer"></span>
+    <label style="font-size:12px;color:var(--muted)">样式
+      <select id="theme-select">
+        <option value="clean">清爽</option>
+        <option value="github">GitHub</option>
+        <option value="paper">书卷</option>
+        <option value="soft">暖沙</option>
+      </select>
+    </label>
   </div>
-  <div class="container">
-    <div id="edit-bar" hidden style="margin-bottom:8px">
+  <div class="doc-container">
+    <div id="edit-bar" hidden>
       <button id="edit-btn">编辑</button>
       <span id="edit-actions" hidden>
         <button id="save-btn">保存</button>
@@ -37,6 +55,7 @@
   <script src="/static/vendor/css-mode.js"></script>
   <script src="/static/vendor/markdown-mode.js"></script>
   <script src="/static/js/render.js"></script>
+  <script src="/static/js/theme.js"></script>
   <script src="/static/js/editor.js"></script>
   <script src="/static/js/doc.js"></script>
 </body>

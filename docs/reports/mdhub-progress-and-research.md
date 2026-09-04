@@ -80,4 +80,6 @@ graph LR
     B -->|密码登录| D[管理员<br/>索引/编辑/新建/删除]
 ```
 
-$$\text{运维成本} = \text{pip install flask} + \text{set\_password} + \text{./start.sh}$$
+$$\text{运维成本} = \text{pip install flask} + \text{set-password} + \text{./start.sh}$$
+追加测试
+||追加测试
