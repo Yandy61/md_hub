@@ -77,3 +77,17 @@ def test_backup_rotation_keeps_n(client, indexed, app, monkeypatch):
         time.sleep(0.01)  # 保证时间戳不同
     backups = os.listdir(app.config["BACKUP_DIR"])
     assert len(backups) == 3  # 只保留最近 3 份
+
+
+def test_put_dir_entry_subpath(client, with_password, tmp_path):
+    """目录条目内文件的编辑写回（ticket 11 发现的 405 缺口）。"""
+    _login(client)
+    d = tmp_path / "docs2"
+    d.mkdir()
+    (d / "inner.md").write_text("old", encoding="utf-8")
+    eid = client.post("/api/entry", json={"path": str(d)}).get_json()["entry"]["id"]
+    r = client.put(f"/api/doc/{eid}/inner.md", json={"text": "new"})
+    assert r.status_code == 200
+    with open(d / "inner.md", encoding="utf-8") as f:
+        assert f.read() == "new"
+    assert client.get(f"/api/raw/{eid}/inner.md").get_json()["text"] == "new"

@@ -135,7 +135,8 @@ def create_app():
 
     @app.get("/doc/<entry_id>/")
     @app.get("/doc/<entry_id>")
-    def doc_page(entry_id):
+    @app.get("/doc/<entry_id>/<path:subpath>")
+    def doc_page(entry_id, subpath=""):
         return send_from_directory(app.template_folder, "doc.html")
 
     @app.get("/api/list")
@@ -216,23 +217,24 @@ def create_app():
         return target, None
 
     @app.get("/api/raw/<entry_id>/")
+    @app.get("/api/raw/<entry_id>/<path:subpath>")
     @admin_required
-    def get_raw(entry_id):
+    def get_raw(entry_id, subpath=""):
         """编辑器取原文（与访客 doc 相同内容，走鉴权）。"""
-        path, err = _resolve(entry_id, "")
+        path, err = _resolve(entry_id, subpath)
         if err is not None:
             return err
-        result = _serve_file(path, entry_id)
-        return result
+        return _serve_file(path, entry_id)
 
     @app.put("/api/doc/<entry_id>/")
+    @app.put("/api/doc/<entry_id>/<path:subpath>")
     @admin_required
-    def put_doc(entry_id):
+    def put_doc(entry_id, subpath=""):
         body = request.get_json(silent=True) or {}
         text = body.get("text")
         if text is None:
             return jsonify({"error": "text required"}), 400
-        path, err = _resolve(entry_id, "")
+        path, err = _resolve(entry_id, subpath)
         if err is not None:
             return err
         if not os.path.isfile(path):
