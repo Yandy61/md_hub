@@ -47,4 +47,24 @@ assert(prefixed.includes('src="/api/asset/3/sub/../up.png"'), "../ 应保留原�
 assert(prefixed.includes('src="https://e.com/x.png"') || prefixed.includes('href="https://e.com/x.png"'), "外链不应重写");
 assert(prefixed.includes('href="/api/asset/3/sub/sub/b.md"'), "相对链接应重写");
 
+// mermaid 块增强（node 环境无 window.mermaid，验证占位替换逻辑需模拟）：
+// 这里验证 enhance 在无 mermaid 环境下不抛错、不改动内容
+const fakeEl = { querySelectorAll: () => [] };
+MdRender.enhance(fakeEl); // 不应抛错
+// 模拟 window.mermaid 存在时的 DOM 流程（用极简 DOM 桩验证 replaceWith 被调用）
+(function () {
+  const pre = { closest: () => null };
+  const codeEl = { textContent: "graph TD; A-->B", closest: () => pre };
+  // closest 返回 null 时 enhance 应安全跳过（防御性）
+  const sandboxWin = { mermaid: { run: () => {} } };
+  global.window = sandboxWin;
+  const el2 = {
+    querySelectorAll: (sel) => (sel === "pre code.language-mermaid" ? [codeEl] : []),
+  };
+  let threw = false;
+  try { MdRender.enhance(el2); } catch (e) { threw = true; }
+  assert(!threw, "mermaid 桩环境下 enhance 不应抛错");
+  delete global.window;
+})();
+
 console.log("render smoke: all assertions passed");

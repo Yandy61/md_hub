@@ -53,10 +53,42 @@
     return md.render(text);
   }
 
+  // 渲染后的后处理：mermaid 代码块转图表容器、KaTeX 渲染公式。
+  // 在浏览器里调用（依赖 window.mermaid / window.renderMathInElement）；
+  // node 冒烟环境不注入这两个全局，函数自动跳过。
+  function enhance(el) {
+    var hasMermaid = typeof window !== "undefined" && window.mermaid;
+    var hasKatex = typeof window !== "undefined" && window.renderMathInElement;
+    if (hasMermaid) {
+      var blocks = el.querySelectorAll("pre code.language-mermaid");
+      blocks.forEach(function (b) {
+        var div = document.createElement("div");
+        div.className = "mermaid";
+        div.textContent = b.textContent;
+        b.closest("pre").replaceWith(div);
+      });
+      try { window.mermaid.run({ nodes: el.querySelectorAll(".mermaid") }); } catch (e) { /* ignore */ }
+    }
+    if (hasKatex) {
+      try {
+        window.renderMathInElement(el, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\[", right: "\\]", display: true },
+            { left: "$", right: "$", display: false },
+            { left: "\\(", right: "\\)", display: false },
+          ],
+          throwOnError: false,
+        });
+      } catch (e) { /* ignore */ }
+    }
+  }
+
   var api = {
     createRenderer: createRenderer,
     renderMarkdown: renderMarkdown,
     assetUrl: assetUrl,
+    enhance: enhance,
   };
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;   // node 冒烟脚本

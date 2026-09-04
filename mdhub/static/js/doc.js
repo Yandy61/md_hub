@@ -35,6 +35,7 @@
     pathEl.textContent = data.path;
     bodyEl.innerHTML = MdRender.renderMarkdown(data.text, window.markdownit, window.hljs,
       { assetPrefix: assetPrefix() });
+    MdRender.enhance(bodyEl);
   }
 
   function poll() {
