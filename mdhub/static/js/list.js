@@ -1,4 +1,4 @@
-/* 列表页：拉取 /api/list 渲染文档列表，客户端即时过滤 */
+/* 列表页：按索引根分组、目录树形展示、客户端即时过滤、更新时间 */
 (function () {
   var filterBox = document.getElementById("filter");
   var container = document.getElementById("entries");
@@ -10,6 +10,30 @@
     function p(n) { return (n < 10 ? "0" : "") + n; }
     return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) +
       " " + p(d.getHours()) + ":" + p(d.getMinutes());
+  }
+
+  function matchKw(name, kw) {
+    return !kw || name.toLowerCase().indexOf(kw) >= 0;
+  }
+
+  function fileLi(href, name, meta, missing) {
+    var li = document.createElement("li");
+    if (missing) {
+      li.innerHTML = '<span class="name missing">⚠ 源丢失</span><span class="meta"></span>';
+      return li;
+    }
+    var a = document.createElement("a");
+    a.href = href;
+    a.textContent = name;
+    var nameSpan = document.createElement("span");
+    nameSpan.className = "name";
+    nameSpan.appendChild(a);
+    var metaSpan = document.createElement("span");
+    metaSpan.className = "meta";
+    metaSpan.textContent = meta;
+    li.appendChild(nameSpan);
+    li.appendChild(metaSpan);
+    return li;
   }
 
   function render() {
@@ -24,20 +48,28 @@
       block.className = "entry-block";
       var root = document.createElement("div");
       root.className = "entry-root";
-      root.textContent = e.path;
+      root.textContent = e.path + (e.missing ? "  ⚠ 源丢失" : "");
       block.appendChild(root);
       var ul = document.createElement("ul");
       ul.className = "file-list";
       if (e.type === "file") {
-        if (e.missing) {
-          ul.innerHTML = '<li><span class="name missing">⚠ 源丢失</span><span class="meta"></span></li>';
-        } else if (!kw || e.path.toLowerCase().indexOf(kw) >= 0) {
-          var li = document.createElement("li");
-          li.innerHTML = '<span class="name"><a href="/doc/' + e.id + '/"></a></span>' +
-            '<span class="meta"></span>';
-          li.querySelector("a").textContent = e.path.split("/").pop();
-          li.querySelector(".meta").textContent = fmtTime(e.mtime);
-          ul.appendChild(li);
+        if (e.missing || matchKw(e.path, kw)) {
+          ul.appendChild(fileLi("/doc/" + e.id + "/", e.path.split("/").pop(),
+            fmtTime(e.mtime), e.missing));
+        }
+      } else if (e.type === "dir" && !e.missing) {
+        var shown = 0;
+        e.files.forEach(function (f) {
+          if (!matchKw(f.rel, kw)) return;
+          shown++;
+          var name = f.rel.split("/").pop();
+          var meta = f.rel.indexOf("/") >= 0
+            ? f.rel.slice(0, f.rel.lastIndexOf("/")) + " · " + fmtTime(f.mtime)
+            : fmtTime(f.mtime);
+          ul.appendChild(fileLi("/doc/" + e.id + "/" + f.rel, name, meta, false));
+        });
+        if (!shown && kw) {
+          ul.innerHTML = '<li><span class="meta">（无匹配文件）</span></li>';
         }
       }
       block.appendChild(ul);

@@ -6,6 +6,7 @@ from flask import Flask, jsonify, send_from_directory
 from mdhub import config
 from mdhub.reader import read_text
 from mdhub.registry import Registry
+from mdhub.scanner import scan_dir
 
 
 def create_app():
@@ -43,6 +44,18 @@ def create_app():
                     st = os.stat(e["path"])
                     item["mtime"] = int(st.st_mtime)
                     item["size"] = st.st_size
+            else:  # dir：递归扫描
+                if os.path.isdir(e["path"]):
+                    item["missing"] = False
+                    files = []
+                    for rel in scan_dir(e["path"]):
+                        fp = os.path.join(e["path"], rel.replace("/", os.sep))
+                        fst = os.stat(fp)
+                        files.append({"rel": rel, "mtime": int(fst.st_mtime), "size": fst.st_size})
+                    item["files"] = files
+                else:
+                    item["missing"] = True
+                    item["files"] = []
             out.append(item)
         return jsonify({"entries": out})
 
