@@ -40,11 +40,11 @@
     li.appendChild(metaSpan);
     if (isAdmin && entryId) {
       var btn = document.createElement("button");
-      var isWsFile = entry && entry.workspace;
+      var isSvcFile = entry && entry.created_in_service; // 来源判定：服务新建才允许真删
       btn.className = "btn-unshare";
-      btn.textContent = isWsFile ? "删除" : "取消共享";
+      btn.textContent = isSvcFile ? "删除" : "取消共享";
       btn.addEventListener("click", function () {
-        if (window.MdHubAdmin) { window.MdHubAdmin.removeEntry(entryId, isWsFile); }
+        if (window.MdHubAdmin) { window.MdHubAdmin.removeEntry(entryId, isSvcFile); }
       });
       li.appendChild(btn);
     }

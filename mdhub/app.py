@@ -10,18 +10,25 @@ from mdhub.registry import Registry
 from mdhub.scanner import scan_dir
 
 
+def _within(real_target, base):
+    """realpath 边界检查：解析符号链接后比对（防软链越界）。"""
+    rt = os.path.realpath(real_target)
+    rb = os.path.realpath(base)
+    return rt == rb or rt.startswith(rb + os.sep)
+
+
 def create_app():
     app = Flask(__name__, static_folder="static", static_url_path="/static")
-    app = Flask(__name__, static_folder="static", static_url_path="/static")
+    cfg = config.load_config()
     app.config.update(
         REGISTRY_PATH=config.REGISTRY_PATH,
-        WORKSPACE=config.WORKSPACE_DIR,
+        WORKSPACE=cfg.get("workspace") or config.WORKSPACE_DIR,
         BACKUP_DIR=config.BACKUP_DIR,
-        BACKUP_KEEP=10,
+        BACKUP_KEEP=cfg.get("backup_keep", 10),
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Strict",
     )
-    app.secret_key = config.load_config()["secret_key"]
+    app.secret_key = cfg["secret_key"]
     registry = Registry(config.REGISTRY_PATH)
 
     def is_admin():
@@ -105,23 +112,25 @@ def create_app():
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
             f.write(text)
-        entry = registry.add(path, "file")
+        entry = registry.add(path, "file", created_in_service=True)
         return jsonify({"entry": entry}), 201
 
     @app.delete("/api/file/<entry_id>")
     @admin_required
     def delete_file(entry_id):
-        """删除服务新建的文件：索引移除 + 真实文件删除。仅限 workspace 内。"""
+        """删除服务新建的文件：索引移除 + 真实文件删除。
+
+        语义按来源（created_in_service）而非当前位置判定：
+        外部文件即使恰好位于 workspace 内也只允许取消共享。
+        """
         entries = {e["id"]: e for e in registry.entries()}
         entry = entries.get(entry_id)
         if not entry:
             return jsonify({"error": "no such entry"}), 404
-        ws = os.path.abspath(app.config["WORKSPACE"])
-        path = os.path.abspath(entry["path"])
-        if not path.startswith(ws + os.sep):
-            return jsonify({"error": "not a workspace file — use unshare instead"}), 409
-        if os.path.exists(path):
-            os.remove(path)
+        if not entry.get("created_in_service"):
+            return jsonify({"error": "not created by service — use unshare instead"}), 409
+        if os.path.exists(entry["path"]):
+            os.remove(entry["path"])
         registry.remove(entry_id)
         return jsonify({"deleted": entry_id})
 
@@ -141,25 +150,31 @@ def create_app():
 
     @app.get("/api/list")
     def list_entries():
-        ws = os.path.abspath(app.config["WORKSPACE"])
         out = []
         for e in registry.entries():
-            item = {"id": e["id"], "path": e["path"], "type": e["type"]}
-            in_ws = os.path.abspath(e["path"]).startswith(ws + os.sep)
-            item["workspace"] = e["type"] == "file" and in_ws
+            item = {"id": e["id"], "path": e["path"], "type": e["type"],
+                    "created_in_service": bool(e.get("created_in_service"))}
             if e["type"] == "file":
                 item["missing"] = not os.path.exists(e["path"])
                 if not item["missing"]:
-                    st = os.stat(e["path"])
-                    item["mtime"] = int(st.st_mtime)
-                    item["size"] = st.st_size
+                    try:
+                        st = os.stat(e["path"])
+                    except OSError:
+                        item["missing"] = True
+                    else:
+                        item["mtime"] = int(st.st_mtime)
+                        item["size"] = st.st_size
             else:  # dir：递归扫描
                 if os.path.isdir(e["path"]):
                     item["missing"] = False
                     files = []
                     for rel in scan_dir(e["path"]):
                         fp = os.path.join(e["path"], rel.replace("/", os.sep))
-                        fst = os.stat(fp)
+                        try:
+                            fst = os.stat(fp)  # 坏符号链接/TOCTOU 不至于打挂列表
+                        except OSError:
+                            files.append({"rel": rel, "missing": True})
+                            continue
                         files.append({"rel": rel, "mtime": int(fst.st_mtime), "size": fst.st_size})
                     item["files"] = files
                 else:
@@ -169,7 +184,7 @@ def create_app():
         return jsonify({"entries": out})
 
     def _resolve(entry_id, subpath):
-        """定位条目内文件。返回 (abs_path, None) 或 (None, error_response)。"""
+        """定位条目内文件（realpath 边界检查）。返回 (abs_path, None) 或 (None, error_response)。"""
         entries = {e["id"]: e for e in registry.entries()}
         entry = entries.get(entry_id)
         if not entry:
@@ -179,9 +194,9 @@ def create_app():
             if subpath:
                 return None, (jsonify({"error": "not found"}), 404)
             return base, None
-        # dir 条目：解析子路径并拒绝越界
+        # dir 条目：解析子路径并拒绝越界（realpath 解析符号链接后比对）
         target = os.path.normpath(os.path.join(base, subpath))
-        if not (target == base or target.startswith(base + os.sep)):
+        if not _within(target, base):
             return None, (jsonify({"error": "traversal blocked"}), 404)
         return target, None
 
@@ -203,7 +218,7 @@ def create_app():
         })
 
     def _resolve_asset(entry_id, subpath):
-        """资产解析：dir 条目以目录为界，file 条目以其所在目录为界。"""
+        """资产解析：dir 条目以目录为界，file 条目以其所在目录为界（realpath 边界）。"""
         entries = {e["id"]: e for e in registry.entries()}
         entry = entries.get(entry_id)
         if not entry:
@@ -212,7 +227,7 @@ def create_app():
         if entry["type"] == "file":
             base = os.path.dirname(base)
         target = os.path.normpath(os.path.join(base, subpath))
-        if not (target == base or target.startswith(base + os.sep)):
+        if not _within(target, base):
             return None, (jsonify({"error": "traversal blocked"}), 404)
         return target, None
 
@@ -245,8 +260,9 @@ def create_app():
             backup_file(path, app.config["BACKUP_DIR"], app.config["BACKUP_KEEP"])
         except OSError:
             pass  # 备份失败不阻塞写回
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(text)
+        from mdhub.reader import write_text
+
+        write_text(path, text)  # 保留原编码（GBK 文件不被静默转码）
         return _serve_file(path, entry_id)
 
     @app.get("/api/asset/<entry_id>/<path:subpath>")

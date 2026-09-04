@@ -1,6 +1,7 @@
-/* 编辑模式：CodeMirror 编辑原文 → PUT 写回（管理员；访客看不到按钮） */
+/* 编辑模式：CodeMirror 编辑原文 → PUT 写回（管理员；访客看不到按钮）
+ * subpath 从 URL 透传（apiParts），目录条目内的文档同样可编辑 */
 (function () {
-  var entryId = window.location.pathname.split("/")[2];
+  var P = MdRender.apiParts(window.location.pathname);
   var cm = null;
   var editing = false;
   var pollPaused = false;
@@ -23,7 +24,7 @@
   });
 
   function startEdit() {
-    fetch("/api/raw/" + entryId + "/").then(function (r) {
+    fetch(P.rawUrl).then(function (r) {
       if (r.status !== 200) { throw new Error("cannot load raw"); }
       return r.json();
     }).then(function (d) {
@@ -58,7 +59,7 @@
 
   function save() {
     if (!cm) return;
-    fetch("/api/doc/" + entryId + "/", {
+    fetch(P.docUrl, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: cm.getValue() }),

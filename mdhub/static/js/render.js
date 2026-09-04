@@ -14,9 +14,31 @@
     return /^(https?:|data:|mailto:|\/\/|\/|#)/.test(url);
   }
 
+  function isMarkdownLink(url) {
+    return /\.md$/i.test(url.split("#")[0]);
+  }
+
+  // 从 /doc/<eid>/<subpath...> 解构出各 API URL（doc.js 与 editor.js 共用）
+  function apiParts(pathname) {
+    var parts = pathname.split("/").filter(Boolean);
+    var eid = parts[1] || "";
+    var sub = parts.slice(2).join("/");
+    var suffix = sub ? "/" + sub : "/";
+    var dir = sub.slice(0, sub.lastIndexOf("/") + 1);
+    return {
+      entryId: eid,
+      subpath: sub,
+      docUrl: "/api/doc/" + eid + suffix,
+      rawUrl: "/api/raw/" + eid + suffix,
+      assetPrefix: "/api/asset/" + eid + "/" + dir,
+      docBase: "/doc/" + eid + "/" + dir,
+    };
+  }
+
   function createRenderer(markdownit, hljs, opts) {
     opts = opts || {};
     var prefix = opts.assetPrefix || "";
+    var docBase = opts.docBase || "";
     var md = markdownit({
       html: false,           // 安全：不渲染原文里的 HTML
       linkify: true,
@@ -31,15 +53,19 @@
       },
     });
     if (prefix) {
-      // image 与 link_open 两种 token 携带 src/href
-      [["image", "src"], ["link_open", "href"]].forEach(function (pair) {
-        var rule = pair[0], attr = pair[1];
+      // image src → 资源端点；相对 .md 链接 → 文档页（渲染+轮询）；其余链接 → 资源端点下载
+      [["image", "src", false], ["link_open", "href", true]].forEach(function (item) {
+        var rule = item[0], attr = item[1], isLink = item[2];
         var def = md.renderer.rules[rule];
         md.renderer.rules[rule] = function (tokens, idx, options, env, self) {
           var token = tokens[idx];
           var url = token.attrGet(attr);
           if (url && !isExternal(url)) {
-            token.attrSet(attr, assetUrl(prefix, url));
+            if (isLink && docBase && isMarkdownLink(url)) {
+              token.attrSet(attr, docBase + url);
+            } else {
+              token.attrSet(attr, assetUrl(prefix, url));
+            }
           }
           return def ? def(tokens, idx, options, env, self) : self.renderToken(tokens, idx, options);
         };
@@ -89,6 +115,7 @@
     renderMarkdown: renderMarkdown,
     assetUrl: assetUrl,
     enhance: enhance,
+    apiParts: apiParts,
   };
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;   // node 冒烟脚本

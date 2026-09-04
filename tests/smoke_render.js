@@ -38,14 +38,15 @@ assert(html.includes("<table>"), "表格应渲染");
 const gbk = MdRender.renderMarkdown("中文 **加粗** 文本", markdownit, hljs);
 assert(gbk.includes("<strong>加粗</strong>"), "中文加粗应渲染");
 
-// 资源前缀重写：相对图片/链接 → 资源端点；外链/绝对路径不动
+// 资源前缀重写：相对图片/链接 → 资源端点；.md 相对链接 → 文档页；外链/绝对路径不动
 const prefixed = MdRender.renderMarkdown(
-  "![x](./img/a.png) ![y](../up.png) [外](https://e.com/x.png) [内](sub/b.md)",
-  markdownit, hljs, { assetPrefix: "/api/asset/3/sub/" });
+  "![x](./img/a.png) ![y](../up.png) [外](https://e.com/x.png) [内](sub/b.md) [资源](data.csv)",
+  markdownit, hljs, { assetPrefix: "/api/asset/3/sub/", docBase: "/doc/3/sub/" });
 assert(prefixed.includes('src="/api/asset/3/sub/img/a.png"'), "相对图片应重写到资源端点");
 assert(prefixed.includes('src="/api/asset/3/sub/../up.png"'), "../ 应保留原始语义交给服务端边界判定");
-assert(prefixed.includes('src="https://e.com/x.png"') || prefixed.includes('href="https://e.com/x.png"'), "外链不应重写");
-assert(prefixed.includes('href="/api/asset/3/sub/sub/b.md"'), "相对链接应重写");
+assert(prefixed.includes('href="https://e.com/x.png"'), "外链不应重写");
+assert(prefixed.includes('href="/doc/3/sub/sub/b.md"'), "相对 .md 链接应改写到文档页");
+assert(prefixed.includes('href="/api/asset/3/sub/data.csv"'), "非 md 相对链接仍走资源端点");
 
 // mermaid 块增强（node 环境无 window.mermaid，验证占位替换逻辑需模拟）：
 // 这里验证 enhance 在无 mermaid 环境下不抛错、不改动内容
@@ -66,5 +67,15 @@ MdRender.enhance(fakeEl); // 不应抛错
   assert(!threw, "mermaid 桩环境下 enhance 不应抛错");
   delete global.window;
 })();
+
+// apiParts：doc.js/editor.js 共用的 URL 构造（code-review #1 回归锁）
+const P = MdRender.apiParts("/doc/7/docs/sub/a.md");
+assert(P.entryId === "7", "entryId 应为第 2 段");
+assert(P.docUrl === "/api/doc/7/docs/sub/a.md", "docUrl 应透传 subpath");
+assert(P.rawUrl === "/api/raw/7/docs/sub/a.md", "rawUrl 应透传 subpath");
+assert(P.assetPrefix === "/api/asset/7/docs/sub/", "assetPrefix 应为当前文档目录");
+assert(P.docBase === "/doc/7/docs/sub/", "docBase 应为当前文档目录");
+const P0 = MdRender.apiParts("/doc/7/");
+assert(P0.docUrl === "/api/doc/7/" && P0.assetPrefix === "/api/asset/7/" && P0.docBase === "/doc/7/", "根文档各 URL 正确");
 
 console.log("render smoke: all assertions passed");

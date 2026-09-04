@@ -2,12 +2,12 @@
 (function () {
   var pathEl = document.getElementById("doc-path");
   var bodyEl = document.getElementById("doc-body");
-  var entryId = window.location.pathname.split("/")[2];
+  var P = MdRender.apiParts(window.location.pathname); // entryId/subpath 透传，目录条目靠它定位
   var currentMtime = 0, currentSize = 0;
   var missing = false;
 
   function fetchDoc() {
-    return fetch("/api/doc/" + entryId + "/").then(function (r) {
+    return fetch(P.docUrl).then(function (r) {
       if (r.status !== 200) { throw new Error("missing"); }
       return r.json();
     });
@@ -20,21 +20,14 @@
     }
   }
 
-  function assetPrefix() {
-    // /doc/<eid>/<rel> → /api/asset/<eid>/<dir(rel)>/
-    var parts = window.location.pathname.split("/");
-    var eid = parts[2];
-    var rel = parts.slice(3).filter(Boolean).join("/");
-    var dir = rel.slice(0, rel.lastIndexOf("/") + 1);
-    return "/api/asset/" + eid + "/" + dir;
-  }
-
   function draw(data) {
     missing = false;
     currentMtime = data.mtime; currentSize = data.size;
     pathEl.textContent = data.path;
-    bodyEl.innerHTML = MdRender.renderMarkdown(data.text, window.markdownit, window.hljs,
-      { assetPrefix: assetPrefix() });
+    bodyEl.innerHTML = MdRender.renderMarkdown(data.text, window.markdownit, window.hljs, {
+      assetPrefix: P.assetPrefix,
+      docBase: P.docBase,
+    });
     MdRender.enhance(bodyEl);
   }
 
