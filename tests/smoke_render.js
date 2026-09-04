@@ -43,8 +43,8 @@ const prefixed = MdRender.renderMarkdown(
   "![x](./img/a.png) ![y](../up.png) [外](https://e.com/x.png) [内](sub/b.md)",
   markdownit, hljs, { assetPrefix: "/api/asset/3/sub/" });
 assert(prefixed.includes('src="/api/asset/3/sub/img/a.png"'), "相对图片应重写到资源端点");
-assert(prefixed.includes('src="/api/asset/3/up.png"'), "../ 应归一化");
-assert(prefixed.includes('src="https://e.com/x.png"'), "外链图片不应重写");
+assert(prefixed.includes('src="/api/asset/3/sub/../up.png"'), "../ 应保留原始语义交给服务端边界判定");
+assert(prefixed.includes('src="https://e.com/x.png"') || prefixed.includes('href="https://e.com/x.png"'), "外链不应重写");
 assert(prefixed.includes('href="/api/asset/3/sub/sub/b.md"'), "相对链接应重写");
 
 console.log("render smoke: all assertions passed");

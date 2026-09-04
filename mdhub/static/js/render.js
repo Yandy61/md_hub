@@ -3,14 +3,11 @@
 (function (global) {
   "use strict";
 
-  function normalizeRel(rel) {
-    var out = [];
-    rel.split("/").forEach(function (p) {
-      if (p === "." || p === "") return;
-      if (p === "..") out.pop();
-      else out.push(p);
-    });
-    return out.join("/");
+  function assetUrl(prefix, rel) {
+    // 相对文档目录的路径 → 资源端点 URL。
+    // 去掉 "." 与空段；保留 ".." 语义交给服务端边界判定；分段编码保证 URL 合法。
+    var segs = rel.split("/").filter(function (p) { return p !== "." && p !== ""; });
+    return prefix + segs.map(encodeURIComponent).join("/");
   }
 
   function isExternal(url) {
@@ -34,14 +31,15 @@
       },
     });
     if (prefix) {
-      ["image", "link"].forEach(function (rule) {
+      // image 与 link_open 两种 token 携带 src/href
+      [["image", "src"], ["link_open", "href"]].forEach(function (pair) {
+        var rule = pair[0], attr = pair[1];
         var def = md.renderer.rules[rule];
         md.renderer.rules[rule] = function (tokens, idx, options, env, self) {
           var token = tokens[idx];
-          var attr = rule === "image" ? "src" : "href";
           var url = token.attrGet(attr);
           if (url && !isExternal(url)) {
-            token.attrSet(attr, prefix + normalizeRel(url));
+            token.attrSet(attr, assetUrl(prefix, url));
           }
           return def ? def(tokens, idx, options, env, self) : self.renderToken(tokens, idx, options);
         };
@@ -58,7 +56,7 @@
   var api = {
     createRenderer: createRenderer,
     renderMarkdown: renderMarkdown,
-    normalizeRel: normalizeRel,
+    assetUrl: assetUrl,
   };
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;   // node 冒烟脚本
