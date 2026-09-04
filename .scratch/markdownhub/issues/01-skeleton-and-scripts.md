@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] start.sh 拉起后健康检查端点可访问，日志写入 logs/，pid 文件存在
-- [ ] stop.sh 停止后进程退出、pid 文件清理
-- [ ] 绑定 0.0.0.0:18123，内网其他机器可访问
-- [ ] pytest 测试套件通过（至少含健康检查端点一条，验证 HTTP seam 可用）
-- [ ] conda base 环境直跑，pip 依赖仅 flask
+- [x] start.sh 拉起后健康检查端点可访问，日志写入 logs/，pid 文件存在
+- [x] stop.sh 停止后进程退出、pid 文件清理
+- [x] 绑定 0.0.0.0:18123，内网其他机器可访问
+- [x] pytest 测试套件通过（至少含健康检查端点一条，验证 HTTP seam 可用）
+- [x] conda base 环境直跑，pip 依赖仅 flask
