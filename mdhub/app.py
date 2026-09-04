@@ -79,6 +79,52 @@ def create_app():
             return jsonify({"error": "no such entry"}), 404
         return jsonify({"removed": entry_id})
 
+    def _workspace_path(name):
+        """把相对名解析到 workspace 内的绝对路径；越界返回 None。"""
+        ws = os.path.abspath(app.config["WORKSPACE"])
+        target = os.path.abspath(os.path.join(ws, name))
+        if target != ws and not target.startswith(ws + os.sep):
+            return None
+        return target
+
+    @app.post("/api/file")
+    @admin_required
+    def create_file():
+        body = request.get_json(silent=True) or {}
+        name = (body.get("name") or "").strip()
+        text = body.get("text", "")
+        if not name:
+            return jsonify({"error": "name required"}), 400
+        if not name.endswith(".md"):
+            return jsonify({"error": "only .md files"}), 400
+        path = _workspace_path(name)
+        if path is None:
+            return jsonify({"error": "path outside workspace"}), 400
+        if os.path.exists(path):
+            return jsonify({"error": "file exists"}), 409
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
+        entry = registry.add(path, "file")
+        return jsonify({"entry": entry}), 201
+
+    @app.delete("/api/file/<entry_id>")
+    @admin_required
+    def delete_file(entry_id):
+        """删除服务新建的文件：索引移除 + 真实文件删除。仅限 workspace 内。"""
+        entries = {e["id"]: e for e in registry.entries()}
+        entry = entries.get(entry_id)
+        if not entry:
+            return jsonify({"error": "no such entry"}), 404
+        ws = os.path.abspath(app.config["WORKSPACE"])
+        path = os.path.abspath(entry["path"])
+        if not path.startswith(ws + os.sep):
+            return jsonify({"error": "not a workspace file — use unshare instead"}), 409
+        if os.path.exists(path):
+            os.remove(path)
+        registry.remove(entry_id)
+        return jsonify({"deleted": entry_id})
+
     @app.get("/api/health")
     def health():
         return jsonify({"status": "ok"})
@@ -94,9 +140,12 @@ def create_app():
 
     @app.get("/api/list")
     def list_entries():
+        ws = os.path.abspath(app.config["WORKSPACE"])
         out = []
         for e in registry.entries():
             item = {"id": e["id"], "path": e["path"], "type": e["type"]}
+            in_ws = os.path.abspath(e["path"]).startswith(ws + os.sep)
+            item["workspace"] = e["type"] == "file" and in_ws
             if e["type"] == "file":
                 item["missing"] = not os.path.exists(e["path"])
                 if not item["missing"]:

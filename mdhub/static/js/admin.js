@@ -60,14 +60,37 @@
       ? "删除该文件？（服务内新建的文件，将删除真实文件且不可恢复）"
       : "取消共享该条目？（仅解除索引，不修改原文件）";
     if (!window.confirm(msg)) return;
-    api("DELETE", "/api/entry/" + id).then(function () {
+    var url = isWorkspaceFile ? "/api/file/" + id : "/api/entry/" + id;
+    api("DELETE", url).then(function (res) {
+      if (res.status !== 200 && res.status !== 409) {
+        alert("操作失败：" + (res.data.error || res.status));
+      }
       if (window.MdHubList && window.MdHubList.reload) { window.MdHubList.reload(); }
+    });
+  }
+
+  function createFile(e) {
+    e.preventDefault();
+    var name = el("file-name").value.trim();
+    if (!name) return;
+    api("POST", "/api/file", { name: name, text: "" }).then(function (res) {
+      if (res.status === 201) {
+        el("file-name").value = "";
+        el("entry-msg").textContent = "已创建";
+        if (window.MdHubList && window.MdHubList.reload) { window.MdHubList.reload(); }
+        window.location.href = "/doc/" + res.data.entry.id + "/";
+      } else {
+        el("entry-msg").textContent = "失败：" + (res.data.error || res.status);
+        setTimeout(function () { el("entry-msg").textContent = ""; }, 3000);
+      }
     });
   }
 
   el("login-form").addEventListener("submit", login);
   el("logout-btn").addEventListener("click", logout);
   el("entry-form").addEventListener("submit", addEntry);
+  var fileForm = el("file-form");
+  if (fileForm) { fileForm.addEventListener("submit", createFile); }
   // 供列表页挂删除按钮
   window.MdHubAdmin = { removeEntry: removeEntry, refreshMe: refreshMe };
   refreshMe();

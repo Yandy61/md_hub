@@ -21,7 +21,7 @@
     return !kw || name.toLowerCase().indexOf(kw) >= 0;
   }
 
-  function fileLi(href, name, meta, missing, entryId) {
+  function fileLi(href, name, meta, missing, entryId, entry) {
     var li = document.createElement("li");
     if (missing) {
       li.innerHTML = '<span class="name missing">⚠ 源丢失</span><span class="meta"></span>';
@@ -40,10 +40,11 @@
     li.appendChild(metaSpan);
     if (isAdmin && entryId) {
       var btn = document.createElement("button");
+      var isWsFile = entry && entry.workspace;
       btn.className = "btn-unshare";
-      btn.textContent = "取消共享";
+      btn.textContent = isWsFile ? "删除" : "取消共享";
       btn.addEventListener("click", function () {
-        if (window.MdHubAdmin) { window.MdHubAdmin.removeEntry(entryId, false); }
+        if (window.MdHubAdmin) { window.MdHubAdmin.removeEntry(entryId, isWsFile); }
       });
       li.appendChild(btn);
     }
@@ -69,7 +70,7 @@
       if (e.type === "file") {
         if (e.missing || matchKw(e.path, kw)) {
           ul.appendChild(fileLi("/doc/" + e.id + "/", e.path.split("/").pop(),
-            fmtTime(e.mtime), e.missing, e.id));
+            fmtTime(e.mtime), e.missing, e.id, e));
         }
       } else if (e.type === "dir" && !e.missing) {
         var shown = 0;
