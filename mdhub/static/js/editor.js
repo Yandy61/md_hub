@@ -38,6 +38,11 @@
           mode: "markdown",
           lineNumbers: true,
           lineWrapping: true,
+          theme: document.body.getAttribute("data-scheme") === "dark" ? "material-darker" : "default",
+        });
+        // 主题明暗切换时编辑器跟随
+        document.addEventListener("mdthemechange", function (ev) {
+          if (cm) { cm.setOption("theme", ev.detail.dark ? "material-darker" : "default"); }
         });
       } else {
         cm.setValue(d.text);

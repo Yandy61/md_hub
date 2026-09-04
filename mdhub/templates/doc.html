@@ -14,9 +14,10 @@
     })();
   </script>
   <link rel="stylesheet" href="/static/css/mdhub.css">
-  <link rel="stylesheet" href="/static/vendor/hljs-github.css">
+  <link rel="stylesheet" id="hljs-css" href="/static/vendor/hljs-github.css">
   <link rel="stylesheet" href="/static/vendor/katex.min.css">
   <link rel="stylesheet" href="/static/vendor/codemirror.css">
+  <link rel="stylesheet" id="cm-theme-css" href="/static/vendor/cm-material-darker.css" disabled>
 </head>
 <body data-mdtheme="clean">
   <div class="topbar">
@@ -24,12 +25,7 @@
     <span class="doc-path" id="doc-path"></span>
     <span class="spacer"></span>
     <label style="font-size:12px;color:var(--muted)">样式
-      <select id="theme-select">
-        <option value="clean">清爽</option>
-        <option value="github">GitHub</option>
-        <option value="paper">书卷</option>
-        <option value="soft">暖沙</option>
-      </select>
+      <select id="theme-select"></select>
     </label>
   </div>
   <div class="doc-container">

@@ -33,7 +33,7 @@
   --th-bg: #f8fafc;
 }
 
-/* ============ 渲染主题模板（全浅色系） ============ */
+/* ============ 渲染主题模板（7 浅 + 5 暗） ============ */
 /* GitHub —— 接近 GitHub 文档排版 */
 body[data-mdtheme="github"] {
   --bg: #ffffff; --panel: #ffffff; --panel-2: #f6f8fa;
@@ -75,6 +75,113 @@ body[data-mdtheme="soft"] {
   --measure: 820px;
   --code-bg: #f4f1ea; --inline-code-bg: #eee9df;
   --blockq-border: #7fc4bb; --th-bg: #f8f5f0;
+}
+
+/* 靛夜（暗）—— 深蓝灰底 + 靛蓝点缀 */
+body[data-mdtheme="midnight"] {
+  --bg: #0f1420; --panel: #151b2b; --panel-2: #1b2233;
+  --topbar-bg: rgba(15, 20, 32, .88);
+  --border: #262f44; --border-strong: #34405c;
+  --text: #d5dcea; --muted: #8b94a9; --faint: #626c82;
+  --accent: #818cf8; --accent-soft: rgba(129, 140, 248, .14);
+  --radius: 10px; --radius-sm: 7px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+  --shadow-lift: 0 4px 14px rgba(0, 0, 0, .5);
+  --code-bg: #1b2233; --inline-code-bg: #232c42;
+  --blockq-border: #4f5b8c; --th-bg: #1b2233;
+}
+
+/* 纯黑 OLED（暗）—— 高对比纯黑 */
+body[data-mdtheme="onyx"] {
+  --bg: #000000; --panel: #0c0c0d; --panel-2: #141416;
+  --topbar-bg: rgba(0, 0, 0, .85);
+  --border: #232326; --border-strong: #333338;
+  --text: #e8e8ea; --muted: #9a9aa2; --faint: #6b6b73;
+  --accent: #64b5f6; --accent-soft: rgba(100, 181, 246, .12);
+  --radius: 10px; --radius-sm: 7px;
+  --shadow: none;
+  --code-bg: #141416; --inline-code-bg: #1d1d20;
+  --blockq-border: #3d5a80; --th-bg: #141416;
+}
+
+/* 墨玉（暗）—— 带绿调的深灰，柔和不刺眼 */
+body[data-mdtheme="jade"] {
+  --bg: #12161a; --panel: #181d22; --panel-2: #1e2429;
+  --topbar-bg: rgba(18, 22, 26, .88);
+  --border: #262d33; --border-strong: #353e46;
+  --text: #d4dadf; --muted: #8c959d; --faint: #5f6870;
+  --accent: #4ade80; --accent-soft: rgba(74, 222, 128, .12);
+  --radius: 10px; --radius-sm: 7px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, .35);
+  --code-bg: #1e2429; --inline-code-bg: #232b31;
+  --blockq-border: #2f6d4f; --th-bg: #1e2429;
+}
+
+/* 葡萄紫（暗）—— 暗紫罗兰 */
+body[data-mdtheme="grape"] {
+  --bg: #171321; --panel: #1e192b; --panel-2: #251f35;
+  --topbar-bg: rgba(23, 19, 33, .88);
+  --border: #2d2640; --border-strong: #3e3557;
+  --text: #ddd8e8; --muted: #948da6; --faint: #675f7c;
+  --accent: #c084fc; --accent-soft: rgba(192, 132, 252, .13);
+  --radius: 10px; --radius-sm: 7px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+  --code-bg: #251f35; --inline-code-bg: #2b2440;
+  --blockq-border: #7c5aa8; --th-bg: #251f35;
+}
+
+/* 摩卡（暗）—— 暖棕暗调 */
+body[data-mdtheme="mocha"] {
+  --bg: #1a1612; --panel: #221d18; --panel-2: #2a241e;
+  --topbar-bg: rgba(26, 22, 18, .88);
+  --border: #332c24; --border-strong: #463c30;
+  --text: #e2dbd2; --muted: #9b9184; --faint: #6f6659;
+  --accent: #f59e0b; --accent-soft: rgba(245, 158, 11, .12);
+  --radius: 10px; --radius-sm: 7px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+  --code-bg: #2a241e; --inline-code-bg: #332b22;
+  --blockq-border: #8a6d3b; --th-bg: #2a241e;
+}
+
+/* 蔚海（暗）—— 深海蓝 */
+body[data-mdtheme="ocean"] {
+  --bg: #0b1526; --panel: #101d33; --panel-2: #152542;
+  --topbar-bg: rgba(11, 21, 38, .88);
+  --border: #1c2f4f; --border-strong: #274067;
+  --text: #d3dceb; --muted: #8296b4; --faint: #5a6d8a;
+  --accent: #38bdf8; --accent-soft: rgba(56, 189, 248, .12);
+  --radius: 10px; --radius-sm: 7px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, .45);
+  --code-bg: #152542; --inline-code-bg: #1a2c4d;
+  --blockq-border: #2c5985; --th-bg: #152542;
+}
+
+/* 暖砖（暗）—— 暗红棕，终端/复古感 */
+body[data-mdtheme="ember"] {
+  --bg: #1c1412; --panel: #241a17; --panel-2: #2d211d;
+  --topbar-bg: rgba(28, 20, 18, .88);
+  --border: #362823; --border-strong: #4a362f;
+  --text: #e5dcd7; --muted: #a2938c; --faint: #72655f;
+  --accent: #fb923c; --accent-soft: rgba(251, 146, 60, .12);
+  --radius: 10px; --radius-sm: 7px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+  --code-bg: #2d211d; --inline-code-bg: #362823;
+  --blockq-border: #8a4a2e; --th-bg: #2d211d;
+}
+
+/* 书卷·暗（paper 夜读版）—— 暗棕纸感 */
+body[data-mdtheme="paper-dark"] {
+  --bg: #191511; --panel: #211c16; --panel-2: #292319;
+  --topbar-bg: rgba(25, 21, 17, .88);
+  --border: #322a20; --border-strong: #453a2b;
+  --text: #e0d8ca; --muted: #a1937e; --faint: #736752;
+  --accent: #d4a855; --accent-soft: rgba(212, 168, 85, .12);
+  --radius: 6px; --radius-sm: 4px;
+  --font-body: Georgia, "Times New Roman", "Songti SC", "Noto Serif SC", "SimSun", serif;
+  --measure: 760px; --h1: 1.8em; --h2: 1.4em; --h3: 1.15em;
+  --shadow: 0 1px 4px rgba(0, 0, 0, .4);
+  --code-bg: #292319; --inline-code-bg: #332c20;
+  --blockq-border: #8a6d3b; --th-bg: #292319; --body-lh: 1.9;
 }
 
 /* ============ 基础 ============ */
@@ -359,3 +466,26 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-so
 .CodeMirror { background: var(--panel); color: var(--text); }
 .CodeMirror-gutters { background: var(--panel-2); border-right: 1px solid var(--border); }
 .CodeMirror-cursor { border-left-color: var(--accent); }
+
+/* ============ 暗色主题适配 ============ */
+/* h1 渐变色标在暗底下更亮一档 */
+body[data-mdtheme="midnight"] #doc-body h1::before,
+body[data-mdtheme="onyx"] #doc-body h1::before,
+body[data-mdtheme="jade"] #doc-body h1::before,
+body[data-mdtheme="grape"] #doc-body h1::before,
+body[data-mdtheme="mocha"] #doc-body h1::before,
+body[data-mdtheme="ocean"] #doc-body h1::before,
+body[data-mdtheme="ember"] #doc-body h1::before,
+body[data-mdtheme="paper-dark"] #doc-body h1::before {
+  background: var(--accent);
+  background: linear-gradient(180deg, var(--accent), rgba(255, 255, 255, .55));
+}
+/* 品牌徽标随主题主色 */
+body[data-mdtheme="midnight"] .topbar .brand::before { background: linear-gradient(135deg, #818cf8, #a78bfa); }
+body[data-mdtheme="onyx"] .topbar .brand::before { background: linear-gradient(135deg, #64b5f6, #42a5f5); }
+body[data-mdtheme="jade"] .topbar .brand::before { background: linear-gradient(135deg, #4ade80, #22c55e); }
+body[data-mdtheme="grape"] .topbar .brand::before { background: linear-gradient(135deg, #c084fc, #a855f7); }
+body[data-mdtheme="mocha"] .topbar .brand::before { background: linear-gradient(135deg, #f59e0b, #d97706); }
+body[data-mdtheme="ocean"] .topbar .brand::before { background: linear-gradient(135deg, #38bdf8, #0ea5e9); }
+body[data-mdtheme="ember"] .topbar .brand::before { background: linear-gradient(135deg, #fb923c, #f97316); }
+body[data-mdtheme="paper-dark"] .topbar .brand::before { background: linear-gradient(135deg, #d4a855, #b8903c); }

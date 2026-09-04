@@ -82,19 +82,30 @@
   // 渲染后的后处理：mermaid 代码块转图表容器、KaTeX 渲染公式。
   // 在浏览器里调用（依赖 window.mermaid / window.renderMathInElement）；
   // node 冒烟环境不注入这两个全局，函数自动跳过。
-  var mermaidInited = false;
-
   function initMermaid() {
-    if (mermaidInited || !window.mermaid) return;
+    if (!window.mermaid) return;
     var font = '-apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
+    var dark = document.body.getAttribute("data-scheme") === "dark";
+    // 每次都 initialize：主题切换后重绘需要新配色（幂等）
     window.mermaid.initialize({
-      startOnLoad: false,          // 渲染时机由 enhance() 控制
+      startOnLoad: false,
       theme: "base",
       fontFamily: font,
-      themeVariables: {
+      themeVariables: dark ? {
         fontFamily: font,
         fontSize: "14px",
-        primaryColor: "#eef2ff",       // 节点底色：淡靛蓝
+        primaryColor: "#2c3654",
+        primaryTextColor: "#e6ebf5",
+        primaryBorderColor: "#4a5878",
+        lineColor: "#77839f",
+        secondaryColor: "#232b3f",
+        tertiaryColor: "#1a2033",
+        noteBkgColor: "#3d3527",
+        noteBorderColor: "#6b5c3d",
+      } : {
+        fontFamily: font,
+        fontSize: "14px",
+        primaryColor: "#eef2ff",
         primaryTextColor: "#1f2328",
         primaryBorderColor: "#c7d2fe",
         lineColor: "#94a3b8",
@@ -105,7 +116,6 @@
       },
       flowchart: { curve: "basis", padding: 12, nodeSpacing: 40, rankSpacing: 44 },
     });
-    mermaidInited = true;
   }
 
   // KaTeX 的 \text{} 里 `_` 非法（ParseError → 显示原文）。markdown 已把 \_ 吃成 _，
