@@ -12,11 +12,16 @@
       " " + p(d.getHours()) + ":" + p(d.getMinutes());
   }
 
+  var isAdmin = false;
+  if (window.MdHubAdmin && window.MdHubAdmin.refreshMe) {
+    window.MdHubAdmin.refreshMe(function (authed) { isAdmin = authed; render(); });
+  }
+
   function matchKw(name, kw) {
     return !kw || name.toLowerCase().indexOf(kw) >= 0;
   }
 
-  function fileLi(href, name, meta, missing) {
+  function fileLi(href, name, meta, missing, entryId) {
     var li = document.createElement("li");
     if (missing) {
       li.innerHTML = '<span class="name missing">⚠ 源丢失</span><span class="meta"></span>';
@@ -33,6 +38,15 @@
     metaSpan.textContent = meta;
     li.appendChild(nameSpan);
     li.appendChild(metaSpan);
+    if (isAdmin && entryId) {
+      var btn = document.createElement("button");
+      btn.className = "btn-unshare";
+      btn.textContent = "取消共享";
+      btn.addEventListener("click", function () {
+        if (window.MdHubAdmin) { window.MdHubAdmin.removeEntry(entryId, false); }
+      });
+      li.appendChild(btn);
+    }
     return li;
   }
 
@@ -55,7 +69,7 @@
       if (e.type === "file") {
         if (e.missing || matchKw(e.path, kw)) {
           ul.appendChild(fileLi("/doc/" + e.id + "/", e.path.split("/").pop(),
-            fmtTime(e.mtime), e.missing));
+            fmtTime(e.mtime), e.missing, e.id));
         }
       } else if (e.type === "dir" && !e.missing) {
         var shown = 0;
@@ -66,7 +80,7 @@
           var meta = f.rel.indexOf("/") >= 0
             ? f.rel.slice(0, f.rel.lastIndexOf("/")) + " · " + fmtTime(f.mtime)
             : fmtTime(f.mtime);
-          ul.appendChild(fileLi("/doc/" + e.id + "/" + f.rel, name, meta, false));
+          ul.appendChild(fileLi("/doc/" + e.id + "/" + f.rel, name, meta, false, null));
         });
         if (!shown && kw) {
           ul.innerHTML = '<li><span class="meta">（无匹配文件）</span></li>';
@@ -78,11 +92,14 @@
   }
 
   function load() {
-    fetch("/api/list").then(function (r) { return r.json(); }).then(function (data) {
+    return fetch("/api/list").then(function (r) { return r.json(); }).then(function (data) {
       rawData = data;
       render();
     });
   }
+
+  // 暴露给 admin.js：索引变更后刷新列表
+  window.MdHubList = { reload: load };
 
   filterBox.addEventListener("input", render);
   load();

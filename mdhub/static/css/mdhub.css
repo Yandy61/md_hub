@@ -65,6 +65,17 @@ a:hover { text-decoration: underline; }
 .missing { color: var(--danger); }
 .empty-hint { color: var(--muted); padding: 40px 0; text-align: center; }
 
+.btn-unshare {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.btn-unshare:hover { color: var(--danger); border-color: var(--danger); }
+
 /* 文档渲染 */
 #doc-body {
   background: var(--panel);

@@ -72,6 +72,13 @@ def create_app():
         entry = registry.add(path, type_)
         return jsonify({"entry": entry}), 201
 
+    @app.delete("/api/entry/<entry_id>")
+    @admin_required
+    def remove_entry(entry_id):
+        if not registry.remove(entry_id):
+            return jsonify({"error": "no such entry"}), 404
+        return jsonify({"removed": entry_id})
+
     @app.get("/api/health")
     def health():
         return jsonify({"status": "ok"})
