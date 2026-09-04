@@ -166,6 +166,38 @@ def create_app():
             return None, (jsonify({"error": "traversal blocked"}), 404)
         return target, None
 
+    @app.get("/api/raw/<entry_id>/")
+    @admin_required
+    def get_raw(entry_id):
+        """编辑器取原文（与访客 doc 相同内容，走鉴权）。"""
+        path, err = _resolve(entry_id, "")
+        if err is not None:
+            return err
+        result = _serve_file(path, entry_id)
+        return result
+
+    @app.put("/api/doc/<entry_id>/")
+    @admin_required
+    def put_doc(entry_id):
+        body = request.get_json(silent=True) or {}
+        text = body.get("text")
+        if text is None:
+            return jsonify({"error": "text required"}), 400
+        path, err = _resolve(entry_id, "")
+        if err is not None:
+            return err
+        if not os.path.isfile(path):
+            return jsonify({"error": "not found"}), 404
+        try:
+            from mdhub.backup import backup_file
+
+            backup_file(path, app.config["BACKUP_DIR"], app.config["BACKUP_KEEP"])
+        except OSError:
+            pass  # 备份失败不阻塞写回
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
+        return _serve_file(path, entry_id)
+
     @app.get("/api/asset/<entry_id>/<path:subpath>")
     def get_asset(entry_id, subpath):
         path, err = _resolve_asset(entry_id, subpath)

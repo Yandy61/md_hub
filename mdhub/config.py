@@ -13,7 +13,7 @@ DATA_DIR = os.environ.get("MDHUB_DATA_DIR") or os.path.join(PROJECT_ROOT, "data"
 CONFIG_PATH = os.path.join(DATA_DIR, "config.json")
 REGISTRY_PATH = os.path.join(DATA_DIR, "registry.json")
 WORKSPACE_DIR = os.path.join(PROJECT_ROOT, "workspace")
-BACKUP_DIR = os.path.join(PROJECT_ROOT, "data", "backups")
+BACKUP_DIR = os.path.join(DATA_DIR, "backups")
 LOG_DIR = os.path.join(PROJECT_ROOT, "logs")
 
 DEFAULT_CONFIG = {

@@ -39,6 +39,7 @@
   }
 
   function poll() {
+    if (window.MdHubEditor && window.MdHubEditor.pausePoll()) { return; } // 编辑中暂停
     fetchDoc().then(function (d) {
       if (missing || d.mtime !== currentMtime || d.size !== currentSize) { draw(d); }
     }).catch(showMissing);
@@ -46,4 +47,11 @@
 
   fetchDoc().then(draw).catch(showMissing);
   setInterval(poll, 4000);
+
+  // 保存后立即重绘
+  window.MdHubDoc = {
+    refresh: function () {
+      fetchDoc().then(draw).catch(showMissing);
+    },
+  };
 })();
