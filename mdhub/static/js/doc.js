@@ -16,10 +16,20 @@
     bodyEl.innerHTML = '<p class="missing">⚠ 源丢失：文件可能已被移动或删除。</p>';
   }
 
+  function assetPrefix() {
+    // /doc/<eid>/<rel> → /api/asset/<eid>/<dir(rel)>/
+    var parts = window.location.pathname.split("/");
+    var eid = parts[2];
+    var rel = parts.slice(3).filter(Boolean).join("/");
+    var dir = rel.slice(0, rel.lastIndexOf("/") + 1);
+    return "/api/asset/" + eid + "/" + dir;
+  }
+
   function draw(data) {
     currentMtime = data.mtime; currentSize = data.size;
     pathEl.textContent = data.path;
-    bodyEl.innerHTML = MdRender.renderMarkdown(data.text, window.markdownit, window.hljs);
+    bodyEl.innerHTML = MdRender.renderMarkdown(data.text, window.markdownit, window.hljs,
+      { assetPrefix: assetPrefix() });
   }
 
   function poll() {

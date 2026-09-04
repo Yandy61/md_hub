@@ -38,4 +38,13 @@ assert(html.includes("<table>"), "表格应渲染");
 const gbk = MdRender.renderMarkdown("中文 **加粗** 文本", markdownit, hljs);
 assert(gbk.includes("<strong>加粗</strong>"), "中文加粗应渲染");
 
+// 资源前缀重写：相对图片/链接 → 资源端点；外链/绝对路径不动
+const prefixed = MdRender.renderMarkdown(
+  "![x](./img/a.png) ![y](../up.png) [外](https://e.com/x.png) [内](sub/b.md)",
+  markdownit, hljs, { assetPrefix: "/api/asset/3/sub/" });
+assert(prefixed.includes('src="/api/asset/3/sub/img/a.png"'), "相对图片应重写到资源端点");
+assert(prefixed.includes('src="/api/asset/3/up.png"'), "../ 应归一化");
+assert(prefixed.includes('src="https://e.com/x.png"'), "外链图片不应重写");
+assert(prefixed.includes('href="/api/asset/3/sub/sub/b.md"'), "相对链接应重写");
+
 console.log("render smoke: all assertions passed");

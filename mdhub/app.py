@@ -1,7 +1,7 @@
 """MarkdownHub — 内网 markdown 分享服务（Flask 应用工厂）。"""
 import os
 
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_file, send_from_directory
 
 from mdhub import config
 from mdhub.reader import read_text
@@ -92,6 +92,29 @@ def create_app():
             "mtime": int(st.st_mtime),
             "size": st.st_size,
         })
+
+    def _resolve_asset(entry_id, subpath):
+        """资产解析：dir 条目以目录为界，file 条目以其所在目录为界。"""
+        entries = {e["id"]: e for e in registry.entries()}
+        entry = entries.get(entry_id)
+        if not entry:
+            return None, (jsonify({"error": "no such entry"}), 404)
+        base = entry["path"]
+        if entry["type"] == "file":
+            base = os.path.dirname(base)
+        target = os.path.normpath(os.path.join(base, subpath))
+        if not (target == base or target.startswith(base + os.sep)):
+            return None, (jsonify({"error": "traversal blocked"}), 404)
+        return target, None
+
+    @app.get("/api/asset/<entry_id>/<path:subpath>")
+    def get_asset(entry_id, subpath):
+        path, err = _resolve_asset(entry_id, subpath)
+        if err is not None:
+            return err
+        if not os.path.isfile(path):
+            return jsonify({"error": "not found"}), 404
+        return send_file(path)
 
     @app.get("/api/doc/<entry_id>/")
     def get_doc(entry_id):
