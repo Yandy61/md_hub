@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] set_password 命令设置凭证后，可用用户名+密码登录成功
-- [ ] config 中只有哈希与密钥，无明文密码
-- [ ] 未登录访问管理接口被拒；错误密码被拒；登出后会话失效
-- [ ] cookie 为 HttpOnly + SameSite=Strict
-- [ ] HTTP seam 测试覆盖登录/登出/拒绝路径
+- [x] set_password 命令设置凭证后，可用用户名+密码登录成功
+- [x] config 中只有哈希与密钥，无明文密码
+- [x] 未登录访问管理接口被拒；错误密码被拒；登出后会话失效
+- [x] cookie 为 HttpOnly + SameSite=Strict
+- [x] HTTP seam 测试覆盖登录/登出/拒绝路径

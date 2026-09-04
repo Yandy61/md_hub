@@ -1,7 +1,8 @@
 """MarkdownHub — 内网 markdown 分享服务（Flask 应用工厂）。"""
+import functools
 import os
 
-from flask import Flask, jsonify, send_file, send_from_directory
+from flask import Flask, jsonify, request, send_file, send_from_directory, session
 
 from mdhub import config
 from mdhub.reader import read_text
@@ -11,14 +12,65 @@ from mdhub.scanner import scan_dir
 
 def create_app():
     app = Flask(__name__, static_folder="static", static_url_path="/static")
+    app = Flask(__name__, static_folder="static", static_url_path="/static")
     app.config.update(
         REGISTRY_PATH=config.REGISTRY_PATH,
         WORKSPACE=config.WORKSPACE_DIR,
         BACKUP_DIR=config.BACKUP_DIR,
         BACKUP_KEEP=10,
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Strict",
     )
     app.secret_key = config.load_config()["secret_key"]
     registry = Registry(config.REGISTRY_PATH)
+
+    def is_admin():
+        return bool(session.get("admin"))
+
+    def admin_required(fn):
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            if not is_admin():
+                return jsonify({"error": "authentication required"}), 401
+            return fn(*args, **kwargs)
+        return wrapper
+
+    @app.get("/api/me")
+    def me():
+        return jsonify({"authenticated": is_admin()})
+
+    @app.post("/api/login")
+    def login():
+        body = request.get_json(silent=True) or {}
+        username = body.get("username")
+        password = body.get("password")
+        if not username or not password:
+            return jsonify({"error": "username and password required"}), 400
+        cfg = config.load_config()
+        stored = cfg.get("password_hash")
+        if not stored or username != cfg.get("username") or not config.verify_password(password, stored):
+            return jsonify({"error": "invalid credentials"}), 401
+        session.clear()
+        session["admin"] = True
+        return jsonify({"authenticated": True})
+
+    @app.post("/api/logout")
+    def logout():
+        session.clear()
+        return jsonify({"authenticated": False})
+
+    @app.post("/api/entry")
+    @admin_required
+    def add_entry():
+        body = request.get_json(silent=True) or {}
+        path = body.get("path")
+        if not path:
+            return jsonify({"error": "path required"}), 400
+        if not os.path.exists(path):
+            return jsonify({"error": "path not found"}), 404
+        type_ = "dir" if os.path.isdir(path) else "file"
+        entry = registry.add(path, type_)
+        return jsonify({"entry": entry}), 201
 
     @app.get("/api/health")
     def health():

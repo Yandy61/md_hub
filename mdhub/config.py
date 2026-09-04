@@ -60,3 +60,13 @@ def atomic_write_json(path, obj):
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(obj, f, ensure_ascii=False, indent=2)
     os.replace(tmp, path)
+
+
+def set_password(username, password, path=CONFIG_PATH):
+    """设置管理员凭证（PBKDF2 哈希 + 随机 session 密钥），写入 config.json。"""
+    cfg = load_config(path)
+    cfg["username"] = username
+    cfg["password_hash"] = hash_password(password)
+    cfg["secret_key"] = secrets.token_hex(32)  # 换密后旧会话全部失效
+    atomic_write_json(path, cfg)
+    return cfg
