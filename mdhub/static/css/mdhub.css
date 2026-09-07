@@ -186,6 +186,7 @@ body[data-mdtheme="paper-dark"] {
 
 /* ============ 基础 ============ */
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }  /* 防止组件级 display 覆盖 hidden 语义 */
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
