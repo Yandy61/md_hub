@@ -9,21 +9,7 @@
   <link rel="stylesheet" href="/static/vendor/katex.min.css">
   <link rel="stylesheet" href="/static/vendor/codemirror.css">
   <link rel="stylesheet" id="cm-theme-css" href="/static/vendor/cm-material-darker.css" disabled>
-  <script>
-    // 首帧主题：在解析到这里时立即应用（CSS 变量挂在 <html> 上），
-    // 避免"先亮后暗"的闪烁；暗色同时切换代码高亮。localStorage 不可用则默认。
-    (function () {
-      var DARK = { midnight: 1, onyx: 1, jade: 1, grape: 1, mocha: 1, ocean: 1, ember: 1, "paper-dark": 1 };
-      var t = "clean";
-      try { t = localStorage.getItem("mdhub-theme") || t; } catch (e) {}
-      if (!DARK[t] && t !== "clean" && t !== "github" && t !== "paper" && t !== "soft") { t = "clean"; }
-      document.documentElement.setAttribute("data-mdtheme", t);
-      var hl = document.getElementById("hljs-css");
-      if (hl && DARK[t]) { hl.href = "/static/vendor/hljs-github-dark.css"; }
-      var cm = document.getElementById("cm-theme-css");
-      if (cm && DARK[t]) { cm.disabled = false; }
-    })();
-  </script>
+  <script src="/static/js/theme-boot.js"></script>
 </head>
 <body data-scheme="light">
   <div class="topbar">

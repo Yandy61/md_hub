@@ -5,16 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MarkdownHub</title>
   <link rel="stylesheet" href="/static/css/mdhub.css">
-  <script>
-    // 首帧主题：立即应用到 <html>，避免进页闪烁（与 doc.html 同逻辑）
-    (function () {
-      var LIGHT = { clean: 1, github: 1, paper: 1, soft: 1 };
-      var t = "clean";
-      try { t = localStorage.getItem("mdhub-theme") || t; } catch (e) {}
-      if (!LIGHT[t]) { t = "clean"; }
-      document.documentElement.setAttribute("data-mdtheme", t);
-    })();
-  </script>
+  <script src="/static/js/theme-boot.js"></script>
 </head>
 <body>
   <div class="topbar">

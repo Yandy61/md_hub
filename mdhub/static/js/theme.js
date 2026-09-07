@@ -1,22 +1,10 @@
-/* 主题选择：12 套渲染主题（7 浅 + 5 暗），body[data-mdtheme] 切换 + localStorage 持久化。
- * 暗色主题联动切换代码高亮（hljs）与编辑器主题（CodeMirror）。 */
+/* 主题切换：从 theme-boot.js 读取权威清单，负责下拉框/切换/持久化/联动。
+ * 首帧应用由 theme-boot.js 在 head 里完成，这里只在用户切换时接手。 */
 (function () {
   var KEY = "mdhub-theme";
-  var THEMES = [
-    { id: "clean", label: "清爽" },
-    { id: "github", label: "GitHub" },
-    { id: "paper", label: "书卷" },
-    { id: "soft", label: "暖沙" },
-    { id: "paper-dark", label: "书卷·暗" },
-    { id: "midnight", label: "靛夜" },
-    { id: "onyx", label: "纯黑 OLED" },
-    { id: "jade", label: "墨玉" },
-    { id: "grape", label: "葡萄紫" },
-    { id: "mocha", label: "摩卡" },
-    { id: "ocean", label: "蔚海" },
-    { id: "ember", label: "暖砖" },
-  ];
-  var DARK = { midnight: 1, onyx: 1, jade: 1, grape: 1, mocha: 1, ocean: 1, ember: 1, "paper-dark": 1 };
+  var meta = window.MdHubThemes || { THEMES: [{ id: "clean", label: "清爽" }], DARK: {} };
+  var THEMES = meta.THEMES;
+  var DARK = meta.DARK;
 
   function apply(t) {
     var theme = null;
@@ -65,5 +53,6 @@
     });
   }
 
+  // 同步 scheme（首帧只设了 html 上的主题，scheme 供 mermaid/editor 判断）
   apply(current());
 })();
