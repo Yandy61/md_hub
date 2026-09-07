@@ -4,7 +4,7 @@
 
 **Blocked by:** 08 — 索引管理（增/删/源丢失）
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] 新建文件落在 workspace 内、自动入索引、访客可见
 - [x] 删除服务新建的文件：索引移除且真实文件被删除

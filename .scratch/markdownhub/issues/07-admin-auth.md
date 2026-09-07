@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 — 项目骨架与启停脚本
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] set_password 命令设置凭证后，可用用户名+密码登录成功
 - [x] config 中只有哈希与密钥，无明文密码

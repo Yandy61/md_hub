@@ -4,7 +4,7 @@
 
 **Blocked by:** 02 — 访客只读最小闭环
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] mermaid 代码块渲染为图表
 - [x] 行内与块级公式渲染正确

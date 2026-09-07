@@ -4,7 +4,7 @@
 
 **Blocked by:** 02 — 访客只读最小闭环
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] 单文件索引：文档同目录的图片可显示
 - [x] 目录索引：子树内任意层级的图片可显示

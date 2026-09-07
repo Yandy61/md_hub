@@ -4,7 +4,7 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] start.sh 拉起后健康检查端点可访问，日志写入 logs/，pid 文件存在
 - [x] stop.sh 停止后进程退出、pid 文件清理

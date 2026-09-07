@@ -4,7 +4,7 @@
 
 **Blocked by:** 03 — 目录索引与树形浏览
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] 外部修改源文件后，一轮轮询周期内页面内容自动更新
 - [x] 索引目录新增/删除文件后列表自动反映
