@@ -22,7 +22,8 @@
     var theme = null;
     for (var i = 0; i < THEMES.length; i++) if (THEMES[i].id === t) theme = THEMES[i];
     if (!theme) { theme = THEMES[0]; t = theme.id; }
-    document.body.setAttribute("data-mdtheme", t);
+    // 主题变量挂 <html>（首帧脚本已可能设过，这里保持同步）
+    document.documentElement.setAttribute("data-mdtheme", t);
     document.body.setAttribute("data-scheme", DARK[t] ? "dark" : "light");
     // 代码高亮明暗联动
     var hl = document.getElementById("hljs-css");
@@ -40,11 +41,9 @@
   }
 
   function current() {
-    var pre = document.documentElement.getAttribute("data-theme-apply");
-    if (pre) {
-      document.documentElement.removeAttribute("data-theme-apply");
-      return pre;
-    }
+    // 首帧脚本已把主题应用到 <html>，直接读取
+    var pre = document.documentElement.getAttribute("data-mdtheme");
+    if (pre) { return pre; }
     try { return localStorage.getItem(KEY) || "clean"; } catch (e) { return "clean"; }
   }
 

@@ -4,22 +4,28 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MarkdownHub</title>
-  <script>
-    // 首帧前应用已保存的主题，避免闪烁（localStorage 读失败则用默认）
-    (function () {
-      try {
-        var t = localStorage.getItem("mdhub-theme");
-        if (t) document.documentElement.setAttribute("data-theme-apply", t);
-      } catch (e) {}
-    })();
-  </script>
   <link rel="stylesheet" href="/static/css/mdhub.css">
   <link rel="stylesheet" id="hljs-css" href="/static/vendor/hljs-github.css">
   <link rel="stylesheet" href="/static/vendor/katex.min.css">
   <link rel="stylesheet" href="/static/vendor/codemirror.css">
   <link rel="stylesheet" id="cm-theme-css" href="/static/vendor/cm-material-darker.css" disabled>
+  <script>
+    // 首帧主题：在解析到这里时立即应用（CSS 变量挂在 <html> 上），
+    // 避免"先亮后暗"的闪烁；暗色同时切换代码高亮。localStorage 不可用则默认。
+    (function () {
+      var DARK = { midnight: 1, onyx: 1, jade: 1, grape: 1, mocha: 1, ocean: 1, ember: 1, "paper-dark": 1 };
+      var t = "clean";
+      try { t = localStorage.getItem("mdhub-theme") || t; } catch (e) {}
+      if (!DARK[t] && t !== "clean" && t !== "github" && t !== "paper" && t !== "soft") { t = "clean"; }
+      document.documentElement.setAttribute("data-mdtheme", t);
+      var hl = document.getElementById("hljs-css");
+      if (hl && DARK[t]) { hl.href = "/static/vendor/hljs-github-dark.css"; }
+      var cm = document.getElementById("cm-theme-css");
+      if (cm && DARK[t]) { cm.disabled = false; }
+    })();
+  </script>
 </head>
-<body data-mdtheme="clean">
+<body data-scheme="light">
   <div class="topbar">
     <span class="brand"><a href="/">MarkdownHub</a></span>
     <span class="doc-path" id="doc-path"></span>

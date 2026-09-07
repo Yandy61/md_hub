@@ -4,16 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MarkdownHub</title>
+  <link rel="stylesheet" href="/static/css/mdhub.css">
   <script>
-    // 首帧前应用已保存的主题，避免闪烁（localStorage 读失败则用默认）
+    // 首帧主题：立即应用到 <html>，避免进页闪烁（与 doc.html 同逻辑）
     (function () {
-      try {
-        var t = localStorage.getItem("mdhub-theme");
-        if (t) document.documentElement.setAttribute("data-theme-apply", t);
-      } catch (e) {}
+      var LIGHT = { clean: 1, github: 1, paper: 1, soft: 1 };
+      var t = "clean";
+      try { t = localStorage.getItem("mdhub-theme") || t; } catch (e) {}
+      if (!LIGHT[t]) { t = "clean"; }
+      document.documentElement.setAttribute("data-mdtheme", t);
     })();
   </script>
-  <link rel="stylesheet" href="/static/css/mdhub.css">
 </head>
 <body>
   <div class="topbar">

@@ -1,5 +1,5 @@
 /* MarkdownHub — 现代简约设计系统
- * 文档渲染支持多主题（body[data-mdtheme=...]），选择持久化在 localStorage */
+ * 文档渲染支持多主题（[data-mdtheme=...]），选择持久化在 localStorage */
 
 /* ============ 设计 tokens（默认：清爽 clean） ============ */
 :root {
@@ -35,7 +35,7 @@
 
 /* ============ 渲染主题模板（7 浅 + 5 暗） ============ */
 /* GitHub —— 接近 GitHub 文档排版 */
-body[data-mdtheme="github"] {
+[data-mdtheme="github"] {
   --bg: #ffffff; --panel: #ffffff; --panel-2: #f6f8fa;
   --topbar-bg: rgba(255, 255, 255, .85);
   --border: #d0d7de; --border-strong: #afb8c1;
@@ -48,7 +48,7 @@ body[data-mdtheme="github"] {
 }
 
 /* 书卷 —— 衬线字体、纸张质感，适合长文阅读 */
-body[data-mdtheme="paper"] {
+[data-mdtheme="paper"] {
   --bg: #f7f4ee; --panel: #fffdf8; --panel-2: #faf7f0;
   --topbar-bg: rgba(255, 253, 248, .88);
   --border: #e7e1d3; --border-strong: #d6cdb8;
@@ -64,7 +64,7 @@ body[data-mdtheme="paper"] {
 }
 
 /* 暖沙 —— 柔和暖色、大圆角 */
-body[data-mdtheme="soft"] {
+[data-mdtheme="soft"] {
   --bg: #f4f1ec; --panel: #fffefb; --panel-2: #f8f5f0;
   --topbar-bg: rgba(255, 254, 251, .88);
   --border: #e9e2d8; --border-strong: #dcd2c4;
@@ -78,7 +78,7 @@ body[data-mdtheme="soft"] {
 }
 
 /* 靛夜（暗）—— 深蓝灰底 + 靛蓝点缀 */
-body[data-mdtheme="midnight"] {
+[data-mdtheme="midnight"] {
   --bg: #0f1420; --panel: #151b2b; --panel-2: #1b2233;
   --topbar-bg: rgba(15, 20, 32, .88);
   --border: #262f44; --border-strong: #34405c;
@@ -92,7 +92,7 @@ body[data-mdtheme="midnight"] {
 }
 
 /* 纯黑 OLED（暗）—— 高对比纯黑 */
-body[data-mdtheme="onyx"] {
+[data-mdtheme="onyx"] {
   --bg: #000000; --panel: #0c0c0d; --panel-2: #141416;
   --topbar-bg: rgba(0, 0, 0, .85);
   --border: #232326; --border-strong: #333338;
@@ -105,7 +105,7 @@ body[data-mdtheme="onyx"] {
 }
 
 /* 墨玉（暗）—— 带绿调的深灰，柔和不刺眼 */
-body[data-mdtheme="jade"] {
+[data-mdtheme="jade"] {
   --bg: #12161a; --panel: #181d22; --panel-2: #1e2429;
   --topbar-bg: rgba(18, 22, 26, .88);
   --border: #262d33; --border-strong: #353e46;
@@ -118,7 +118,7 @@ body[data-mdtheme="jade"] {
 }
 
 /* 葡萄紫（暗）—— 暗紫罗兰 */
-body[data-mdtheme="grape"] {
+[data-mdtheme="grape"] {
   --bg: #171321; --panel: #1e192b; --panel-2: #251f35;
   --topbar-bg: rgba(23, 19, 33, .88);
   --border: #2d2640; --border-strong: #3e3557;
@@ -131,7 +131,7 @@ body[data-mdtheme="grape"] {
 }
 
 /* 摩卡（暗）—— 暖棕暗调 */
-body[data-mdtheme="mocha"] {
+[data-mdtheme="mocha"] {
   --bg: #1a1612; --panel: #221d18; --panel-2: #2a241e;
   --topbar-bg: rgba(26, 22, 18, .88);
   --border: #332c24; --border-strong: #463c30;
@@ -144,7 +144,7 @@ body[data-mdtheme="mocha"] {
 }
 
 /* 蔚海（暗）—— 深海蓝 */
-body[data-mdtheme="ocean"] {
+[data-mdtheme="ocean"] {
   --bg: #0b1526; --panel: #101d33; --panel-2: #152542;
   --topbar-bg: rgba(11, 21, 38, .88);
   --border: #1c2f4f; --border-strong: #274067;
@@ -157,7 +157,7 @@ body[data-mdtheme="ocean"] {
 }
 
 /* 暖砖（暗）—— 暗红棕，终端/复古感 */
-body[data-mdtheme="ember"] {
+[data-mdtheme="ember"] {
   --bg: #1c1412; --panel: #241a17; --panel-2: #2d211d;
   --topbar-bg: rgba(28, 20, 18, .88);
   --border: #362823; --border-strong: #4a362f;
@@ -170,7 +170,7 @@ body[data-mdtheme="ember"] {
 }
 
 /* 书卷·暗（paper 夜读版）—— 暗棕纸感 */
-body[data-mdtheme="paper-dark"] {
+[data-mdtheme="paper-dark"] {
   --bg: #191511; --panel: #211c16; --panel-2: #292319;
   --topbar-bg: rgba(25, 21, 17, .88);
   --border: #322a20; --border-strong: #453a2b;
@@ -470,23 +470,23 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-so
 
 /* ============ 暗色主题适配 ============ */
 /* h1 渐变色标在暗底下更亮一档 */
-body[data-mdtheme="midnight"] #doc-body h1::before,
-body[data-mdtheme="onyx"] #doc-body h1::before,
-body[data-mdtheme="jade"] #doc-body h1::before,
-body[data-mdtheme="grape"] #doc-body h1::before,
-body[data-mdtheme="mocha"] #doc-body h1::before,
-body[data-mdtheme="ocean"] #doc-body h1::before,
-body[data-mdtheme="ember"] #doc-body h1::before,
-body[data-mdtheme="paper-dark"] #doc-body h1::before {
+[data-mdtheme="midnight"] #doc-body h1::before,
+[data-mdtheme="onyx"] #doc-body h1::before,
+[data-mdtheme="jade"] #doc-body h1::before,
+[data-mdtheme="grape"] #doc-body h1::before,
+[data-mdtheme="mocha"] #doc-body h1::before,
+[data-mdtheme="ocean"] #doc-body h1::before,
+[data-mdtheme="ember"] #doc-body h1::before,
+[data-mdtheme="paper-dark"] #doc-body h1::before {
   background: var(--accent);
   background: linear-gradient(180deg, var(--accent), rgba(255, 255, 255, .55));
 }
 /* 品牌徽标随主题主色 */
-body[data-mdtheme="midnight"] .topbar .brand::before { background: linear-gradient(135deg, #818cf8, #a78bfa); }
-body[data-mdtheme="onyx"] .topbar .brand::before { background: linear-gradient(135deg, #64b5f6, #42a5f5); }
-body[data-mdtheme="jade"] .topbar .brand::before { background: linear-gradient(135deg, #4ade80, #22c55e); }
-body[data-mdtheme="grape"] .topbar .brand::before { background: linear-gradient(135deg, #c084fc, #a855f7); }
-body[data-mdtheme="mocha"] .topbar .brand::before { background: linear-gradient(135deg, #f59e0b, #d97706); }
-body[data-mdtheme="ocean"] .topbar .brand::before { background: linear-gradient(135deg, #38bdf8, #0ea5e9); }
-body[data-mdtheme="ember"] .topbar .brand::before { background: linear-gradient(135deg, #fb923c, #f97316); }
-body[data-mdtheme="paper-dark"] .topbar .brand::before { background: linear-gradient(135deg, #d4a855, #b8903c); }
+[data-mdtheme="midnight"] .topbar .brand::before { background: linear-gradient(135deg, #818cf8, #a78bfa); }
+[data-mdtheme="onyx"] .topbar .brand::before { background: linear-gradient(135deg, #64b5f6, #42a5f5); }
+[data-mdtheme="jade"] .topbar .brand::before { background: linear-gradient(135deg, #4ade80, #22c55e); }
+[data-mdtheme="grape"] .topbar .brand::before { background: linear-gradient(135deg, #c084fc, #a855f7); }
+[data-mdtheme="mocha"] .topbar .brand::before { background: linear-gradient(135deg, #f59e0b, #d97706); }
+[data-mdtheme="ocean"] .topbar .brand::before { background: linear-gradient(135deg, #38bdf8, #0ea5e9); }
+[data-mdtheme="ember"] .topbar .brand::before { background: linear-gradient(135deg, #fb923c, #f97316); }
+[data-mdtheme="paper-dark"] .topbar .brand::before { background: linear-gradient(135deg, #d4a855, #b8903c); }
