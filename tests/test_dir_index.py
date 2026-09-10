@@ -3,6 +3,11 @@ import os
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def _authed(login):
+    """目录索引的列表断言需登录态（/api/list 已加鉴权）。"""
+
+
 @pytest.fixture()
 def dirtree(tmp_path):
     """建一棵含排除项的目录树：

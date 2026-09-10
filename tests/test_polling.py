@@ -7,6 +7,11 @@ import time
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def _authed(login):
+    """轮询数据源的列表断言需登录态（/api/list 已加鉴权）。"""
+
+
 def _add_dir(client_app, path):
     from mdhub.registry import Registry
 

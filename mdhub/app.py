@@ -7,7 +7,7 @@ from flask import Flask, jsonify, request, send_file, send_from_directory, sessi
 from mdhub import config
 from mdhub.reader import read_text
 from mdhub.registry import Registry
-from mdhub.scanner import scan_dir
+from mdhub.scanner import is_excluded, scan_dir
 
 
 def _within(real_target, base):
@@ -27,6 +27,7 @@ def create_app():
         BACKUP_KEEP=cfg.get("backup_keep", 10),
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Strict",
+        BROWSE_ROOT=os.path.expanduser("~"),
     )
     app.secret_key = cfg["secret_key"]
     registry = Registry(config.REGISTRY_PATH)
@@ -134,13 +135,64 @@ def create_app():
         registry.remove(entry_id)
         return jsonify({"deleted": entry_id})
 
+    @app.get("/api/browse")
+    @admin_required
+    def browse():
+        """目录浏览器：以 home 为根，允许经 home 下软链进入（realpath 后仍在许可根内）。"""
+        root = app.config["BROWSE_ROOT"]
+        # 许可根：home 的 realpath + home 下所有软链的 realpath 目标
+        allowed_roots = {os.path.realpath(root)}
+        try:
+            for name in os.listdir(root):
+                full = os.path.join(root, name)
+                if os.path.islink(full):
+                    allowed_roots.add(os.path.realpath(full))
+        except OSError:
+            pass
+
+        def resolve(p):
+            rp = os.path.realpath(p)
+            for r in allowed_roots:
+                if rp == r or rp.startswith(r + os.sep):
+                    return rp
+            return None
+
+        path = request.args.get("path") or root
+        current = resolve(path)
+        if current is None or not os.path.isdir(current):
+            return jsonify({"error": "path not allowed"}), 403
+
+        dirs, files = [], []
+        for name in os.listdir(current):
+            if is_excluded(name):
+                continue
+            full = os.path.join(current, name)
+            if os.path.isdir(full):
+                dirs.append({"name": name, "path": os.path.realpath(full)})
+            elif os.path.isfile(full) and name.endswith(".md"):
+                files.append({"name": name, "path": os.path.realpath(full)})
+        dirs.sort(key=lambda d: d["name"].lower())
+        files.sort(key=lambda f: f["name"].lower())
+
+        parent = resolve(os.path.dirname(current))
+        return jsonify({
+            "root": os.path.realpath(root),
+            "current": current,
+            "parent": parent,
+            "dirs": dirs,
+            "files": files,
+        })
+
     @app.get("/api/health")
     def health():
         return jsonify({"status": "ok"})
 
     @app.get("/")
     def index_page():
-        return send_from_directory(app.template_folder, "list.html")
+        # 主界面需登录；文档预览页（/doc/*）保持匿名
+        if is_admin():
+            return send_from_directory(app.template_folder, "list.html")
+        return send_from_directory(app.template_folder, "login.html")
 
     @app.get("/doc/<entry_id>/")
     @app.get("/doc/<entry_id>")
@@ -149,6 +201,7 @@ def create_app():
         return send_from_directory(app.template_folder, "doc.html")
 
     @app.get("/api/list")
+    @admin_required
     def list_entries():
         out = []
         for e in registry.entries():

@@ -21,7 +21,7 @@ def indexed_file(client, mdfile, app):
     return entry
 
 
-def test_list_shows_indexed_file(client, indexed_file, mdfile):
+def test_list_shows_indexed_file(client, indexed_file, mdfile, login):
     r = client.get("/api/list")
     assert r.status_code == 200
     entries = r.get_json()["entries"]
@@ -62,13 +62,24 @@ def test_doc_traversal_blocked(client, indexed_file):
     assert r.status_code == 404
 
 
-def test_missing_source_marked(client, indexed_file, tmp_path):
+def test_missing_source_marked(client, indexed_file, tmp_path, login):
     # 源文件被外部删除 → 条目保留并标记 missing
     os.remove(indexed_file["path"])
     r = client.get("/api/list")
     e = r.get_json()["entries"][0]
     assert e["missing"] is True
     assert client.get(f"/api/doc/{e['id']}/").status_code == 404
+
+
+def test_index_requires_login_doc_anonymous(client, indexed_file):
+    # 未登录：主界面是登录页；文档页仍匿名可达（私密链接语义）
+    home = client.get("/")
+    assert home.status_code == 200
+    assert b"login-form" in home.data
+    doc = client.get(f"/doc/{indexed_file['id']}/")
+    assert doc.status_code == 200
+    assert client.get(f"/api/doc/{indexed_file['id']}/").status_code == 200
+    assert client.get("/api/list").status_code == 401
 
 
 def test_registry_atomic_and_idempotent(app, mdfile):

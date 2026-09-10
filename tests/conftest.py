@@ -24,3 +24,25 @@ def app(tmp_path, monkeypatch):
 @pytest.fixture()
 def client(app):
     return app.test_client()
+
+
+@pytest.fixture()
+def with_password(app, tmp_path):
+    """写入管理员凭证到 config.json（供登录类测试）。"""
+    import json
+
+    from mdhub import config as cfgmod
+
+    data_dir = os.environ["MDHUB_DATA_DIR"]
+    os.makedirs(data_dir, exist_ok=True)
+    cfg = {"username": "admin", "password_hash": cfgmod.hash_password("s3cret!")}
+    with open(os.path.join(data_dir, "config.json"), "w", encoding="utf-8") as f:
+        json.dump(cfg, f)
+    return app
+
+
+@pytest.fixture()
+def login(client, with_password):
+    """已登录的 test client（与 client 同一实例，注入 session）。"""
+    client.post("/api/login", json={"username": "admin", "password": "s3cret!"})
+    return client

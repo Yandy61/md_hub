@@ -65,7 +65,7 @@ def test_symlink_within_tree_still_served(client, app, tmp_path):
 
 # --- #4 坏符号链接不让 /api/list 500 ---
 
-def test_broken_symlink_does_not_break_list(client, app, tmp_path):
+def test_broken_symlink_does_not_break_list(client, app, tmp_path, login):
     d = tmp_path / "withbroken"
     d.mkdir()
     (d / "ok.md").write_text("ok", encoding="utf-8")

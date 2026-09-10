@@ -1,8 +1,5 @@
-/* 管理功能：登录/登出、新增索引、取消共享（外部条目） */
+/* 管理区：新增索引、新建文件、取消共享/删除、登出。登录已移到 login.html。 */
 (function () {
-  var adminBox = document.getElementById("admin-box");
-  if (!adminBox) return;
-
   function el(id) { return document.getElementById(id); }
 
   function api(method, url, body) {
@@ -17,26 +14,13 @@
 
   function refreshMe(cb) {
     api("GET", "/api/me").then(function (res) {
-      var authed = res.data.authenticated;
-      el("login-form").hidden = authed;
-      el("admin-actions").hidden = !authed;
-      if (cb) cb(authed);
-    });
-  }
-
-  function login(e) {
-    e.preventDefault();
-    api("POST", "/api/login", {
-      username: el("login-username").value,
-      password: el("login-password").value,
-    }).then(function (res) {
-      if (res.status === 200) { refreshMe(); }
-      else { el("login-error").textContent = "用户名或密码错误"; }
+      if (!res.data.authenticated) { window.location.href = "/"; return; }
+      if (cb) cb(true);
     });
   }
 
   function logout() {
-    api("POST", "/api/logout").then(function () { refreshMe(); });
+    api("POST", "/api/logout").then(function () { window.location.href = "/"; });
   }
 
   function addEntry(e) {
@@ -52,20 +36,6 @@
         el("entry-msg").textContent = "失败：" + (res.data.error || res.status);
       }
       setTimeout(function () { el("entry-msg").textContent = ""; }, 3000);
-    });
-  }
-
-  function removeEntry(id, isWorkspaceFile) {
-    var msg = isWorkspaceFile
-      ? "删除该文件？（服务内新建的文件，将删除真实文件且不可恢复）"
-      : "取消共享该条目？（仅解除索引，不修改原文件）";
-    if (!window.confirm(msg)) return;
-    var url = isWorkspaceFile ? "/api/file/" + id : "/api/entry/" + id;
-    api("DELETE", url).then(function (res) {
-      if (res.status !== 200 && res.status !== 409) {
-        alert("操作失败：" + (res.data.error || res.status));
-      }
-      if (window.MdHubList && window.MdHubList.reload) { window.MdHubList.reload(); }
     });
   }
 
@@ -86,12 +56,25 @@
     });
   }
 
-  el("login-form").addEventListener("submit", login);
+  function removeEntry(id, isWorkspaceFile) {
+    var msg = isWorkspaceFile
+      ? "删除该文件？（服务内新建的文件，将删除真实文件且不可恢复）"
+      : "取消共享该条目？（仅解除索引，不修改原文件）";
+    if (!window.confirm(msg)) return;
+    var url = isWorkspaceFile ? "/api/file/" + id : "/api/entry/" + id;
+    api("DELETE", url).then(function (res) {
+      if (res.status !== 200 && res.status !== 409) {
+        alert("操作失败：" + (res.data.error || res.status));
+      }
+      if (window.MdHubList && window.MdHubList.reload) { window.MdHubList.reload(); }
+    });
+  }
+
   el("logout-btn").addEventListener("click", logout);
   el("entry-form").addEventListener("submit", addEntry);
   var fileForm = el("file-form");
   if (fileForm) { fileForm.addEventListener("submit", createFile); }
-  // 供列表页挂删除按钮
+  // 供列表页挂删除按钮、目录选择器填路径
   window.MdHubAdmin = { removeEntry: removeEntry, refreshMe: refreshMe };
   refreshMe();
 })();

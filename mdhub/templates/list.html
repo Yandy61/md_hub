@@ -16,29 +16,40 @@
       <select id="theme-select"></select>
     </label>
     <div id="admin-box">
-      <form id="login-form" hidden>
-        <input type="text" id="login-username" placeholder="用户名" size="8">
-        <input type="password" id="login-password" placeholder="密码" size="8">
-        <button type="submit">登录</button>
-        <span id="login-error" class="missing"></span>
+      <form id="entry-form" style="display:inline">
+        <input type="text" id="entry-path" placeholder="输入文件或目录的绝对路径" size="28">
+        <button type="submit">添加索引</button>
       </form>
-      <div id="admin-actions" hidden>
-        <form id="entry-form" style="display:inline">
-          <input type="text" id="entry-path" placeholder="输入文件或目录的绝对路径" size="28">
-          <button type="submit">添加索引</button>
-        </form>
-        <form id="file-form" style="display:inline">
-          <input type="text" id="file-name" placeholder="新建文件名（如 notes/xx.md）" size="22">
-          <button type="submit">新建文件</button>
-          <span id="entry-msg"></span>
-        </form>
-        <button id="logout-btn">登出</button>
-      </div>
+      <button id="browse-btn">浏览目录</button>
+      <form id="file-form" style="display:inline">
+        <input type="text" id="file-name" placeholder="新建文件名（如 notes/xx.md）" size="22">
+        <button type="submit">新建文件</button>
+        <span id="entry-msg"></span>
+      </form>
+      <button id="logout-btn">登出</button>
     </div>
   </div>
   <div class="container" id="entries"></div>
+
+  <div id="browse-modal" class="modal-overlay" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <span class="modal-title">选择目录或文件</span>
+        <button id="browse-close" class="modal-close">✕</button>
+      </div>
+      <div class="modal-path" id="browse-current">—</div>
+      <div class="modal-actions">
+        <button id="browse-up">返回上级</button>
+        <button id="browse-root">回根目录</button>
+        <button id="browse-choose-dir">选此目录</button>
+      </div>
+      <div class="modal-list" id="browse-list"></div>
+    </div>
+  </div>
+
   <script src="/static/js/theme.js"></script>
   <script src="/static/js/admin.js"></script>
+  <script src="/static/js/browse.js"></script>
   <script src="/static/js/list.js"></script>
 </body>
 </html>
