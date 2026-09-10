@@ -42,4 +42,16 @@
   makeControl({ out: "page-zoom-out", inn: "page-zoom-in", lvl: "page-zoom-level" },
     "mdhub-page-zoom", 50, 200,
     function (pct) { body.style.zoom = pct + "%"; });
+
+  // 文档宽度：内容栏 max-width = 主题默认宽度 × 比例；100% 恢复主题默认
+  var container = document.querySelector(".doc-container");
+  if (container) {
+    var baseW = 860;
+    try { baseW = parseFloat(getComputedStyle(container).maxWidth) || 860; } catch (e) {}
+    makeControl({ out: "width-out", inn: "width-in", lvl: "width-level" },
+      "mdhub-width", 50, 200,
+      function (pct) {
+        container.style.maxWidth = (pct === 100) ? "" : (baseW * pct / 100).toFixed(0) + "px";
+      });
+  }
 })();
