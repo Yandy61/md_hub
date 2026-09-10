@@ -49,8 +49,10 @@
       item.className = "browse-item";
       item.innerHTML = '<span class="icon">📄</span><span>' + esc(f.name) + '</span>';
       item.addEventListener("click", function () {
-        el("entry-path").value = f.path;
         close();
+        if (window.MdHubAdmin && window.MdHubAdmin.addEntryByPath) {
+          window.MdHubAdmin.addEntryByPath(f.path);
+        }
       });
       listEl.appendChild(item);
     });
@@ -63,8 +65,11 @@
   });
   el("browse-root").addEventListener("click", function () { load(""); });
   el("browse-choose-dir").addEventListener("click", function () {
-    el("entry-path").value = el("browse-current").textContent;
+    var path = el("browse-current").textContent;
     close();
+    if (window.MdHubAdmin && window.MdHubAdmin.addEntryByPath) {
+      window.MdHubAdmin.addEntryByPath(path);
+    }
   });
   // 点击遮罩关闭
   modal.addEventListener("click", function (e) {

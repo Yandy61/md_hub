@@ -23,19 +23,26 @@
     api("POST", "/api/logout").then(function () { window.location.href = "/"; });
   }
 
-  function addEntry(e) {
-    e.preventDefault();
-    var path = el("entry-path").value.trim();
-    if (!path) return;
-    api("POST", "/api/entry", { path: path }).then(function (res) {
+  function addEntryByPath(rawPath) {
+    var path = (rawPath || "").trim();
+    if (!path) return Promise.resolve(false);
+    return api("POST", "/api/entry", { path: path }).then(function (res) {
       if (res.status === 201) {
-        el("entry-path").value = "";
         el("entry-msg").textContent = "已添加索引";
-        if (window.MdHubList && window.MdHubList.reload) { window.MdHubList.reload(); }
       } else {
         el("entry-msg").textContent = "失败：" + (res.data.error || res.status);
+        alert("添加索引失败：" + (res.data.error || res.status));
       }
+      if (window.MdHubList && window.MdHubList.reload) { window.MdHubList.reload(); }
       setTimeout(function () { el("entry-msg").textContent = ""; }, 3000);
+      return res.status === 201;
+    });
+  }
+
+  function addEntry(e) {
+    e.preventDefault();
+    addEntryByPath(el("entry-path").value).then(function (ok) {
+      if (ok) { el("entry-path").value = ""; }
     });
   }
 
@@ -74,7 +81,7 @@
   el("entry-form").addEventListener("submit", addEntry);
   var fileForm = el("file-form");
   if (fileForm) { fileForm.addEventListener("submit", createFile); }
-  // 供列表页挂删除按钮、目录选择器填路径
-  window.MdHubAdmin = { removeEntry: removeEntry, refreshMe: refreshMe };
+  // 供列表页挂删除按钮、目录选择器直接添加索引
+  window.MdHubAdmin = { removeEntry: removeEntry, refreshMe: refreshMe, addEntryByPath: addEntryByPath };
   refreshMe();
 })();
