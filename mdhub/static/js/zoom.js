@@ -1,35 +1,45 @@
-/* 文档缩放：调整 #doc-body 字号（标题/代码/表格均用 em 相对，会整体缩放），按访客持久化 */
+/* 文档缩放：两组独立控件
+ * 1) 文字缩放（字号）：改 #doc-body font-size，标题/代码/表格用 em 相对会整体缩放文字
+ * 2) 整体缩放（zoom 属性）：连图片一起缩放（Chrome/Edge 全量缩放，Firefox 无此属性则静默降级）
+ * 两组均按访客持久化到 localStorage。
+ */
 (function () {
-  var MIN = 60, MAX = 180, STEP = 10, DEFAULT = 100, KEY = "mdhub-zoom";
   var body = document.getElementById("doc-body");
-  var out = document.getElementById("zoom-out");
-  var inn = document.getElementById("zoom-in");
-  var lvl = document.getElementById("zoom-level");
-  if (!body || !out || !inn || !lvl) return;
+  if (!body) return;
 
-  // 基准字号从 CSS 读（对应 mdhub.css 的 #doc-body font-size），避免硬编码不同步
   var base = 15.5;
   try { base = parseFloat(getComputedStyle(body).fontSize) || 15.5; } catch (e) {}
 
-  var pct = DEFAULT;
-  try { pct = parseInt(localStorage.getItem(KEY), 10) || DEFAULT; } catch (e) {}
+  function makeControl(ids, key, min, max, apply) {
+    var out = document.getElementById(ids.out);
+    var inn = document.getElementById(ids.inn);
+    var lvl = document.getElementById(ids.lvl);
+    if (!out || !inn || !lvl) return;
 
-  function clamp(v) { return Math.min(MAX, Math.max(MIN, v)); }
+    var step = 10;
+    var pct = 100;
+    try { pct = parseInt(localStorage.getItem(key), 10) || 100; } catch (e) {}
+    pct = Math.min(max, Math.max(min, pct));
 
-  function render() {
-    body.style.fontSize = (base * pct / 100).toFixed(1) + "px";
-    lvl.textContent = pct + "%";
-  }
-
-  function set(v) {
-    pct = clamp(v || DEFAULT);
-    try { localStorage.setItem(KEY, String(pct)); } catch (e) {}
+    function render() { apply(pct); lvl.textContent = pct + "%"; }
+    function set(v) {
+      pct = Math.min(max, Math.max(min, v || 100));
+      try { localStorage.setItem(key, String(pct)); } catch (e) {}
+      render();
+    }
+    out.addEventListener("click", function () { set(pct - step); });
+    inn.addEventListener("click", function () { set(pct + step); });
+    lvl.addEventListener("click", function () { set(100); });
     render();
   }
 
-  out.addEventListener("click", function () { set(pct - STEP); });
-  inn.addEventListener("click", function () { set(pct + STEP); });
-  lvl.addEventListener("click", function () { set(DEFAULT); });
+  // 文字缩放：字号 60%–180%
+  makeControl({ out: "zoom-out", inn: "zoom-in", lvl: "zoom-level" },
+    "mdhub-zoom", 60, 180,
+    function (pct) { body.style.fontSize = (base * pct / 100).toFixed(1) + "px"; });
 
-  render();
+  // 整体缩放：zoom 50%–200%
+  makeControl({ out: "page-zoom-out", inn: "page-zoom-in", lvl: "page-zoom-level" },
+    "mdhub-page-zoom", 50, 200,
+    function (pct) { body.style.zoom = pct + "%"; });
 })();
