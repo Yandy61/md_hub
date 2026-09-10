@@ -71,9 +71,10 @@ def create_app():
     @admin_required
     def add_entry():
         body = request.get_json(silent=True) or {}
-        path = body.get("path")
+        path = (body.get("path") or "").strip()
         if not path:
             return jsonify({"error": "path required"}), 400
+        path = os.path.expanduser(path)  # 支持 ~/ 展开为服务用户的 home
         if not os.path.exists(path):
             return jsonify({"error": "path not found"}), 404
         type_ = "dir" if os.path.isdir(path) else "file"

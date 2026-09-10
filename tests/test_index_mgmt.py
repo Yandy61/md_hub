@@ -39,6 +39,18 @@ def test_add_file_entry(client, with_password, tmp_path):
     assert r.get_json()["entry"]["id"] in ids  # 访客立即可见
 
 
+def test_add_entry_expands_tilde(client, with_password, tmp_path, monkeypatch):
+    # ~/ 应展开为 HOME（启动服务用户的 home）
+    _login(client)
+    home = tmp_path / "homedir"
+    home.mkdir()
+    (home / "note.md").write_text("n", encoding="utf-8")
+    monkeypatch.setenv("HOME", str(home))
+    r = client.post("/api/entry", json={"path": "~/note.md"})
+    assert r.status_code == 201
+    assert r.get_json()["entry"]["path"] == str(home / "note.md")
+
+
 def test_add_dir_entry(client, with_password, tmp_path):
     _login(client)
     d = tmp_path / "docs"
