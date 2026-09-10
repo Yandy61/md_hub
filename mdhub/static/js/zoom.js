@@ -49,7 +49,7 @@
     var baseW = 860;
     try { baseW = parseFloat(getComputedStyle(container).maxWidth) || 860; } catch (e) {}
     makeControl({ out: "width-out", inn: "width-in", lvl: "width-level" },
-      "mdhub-width", 50, 200,
+      "mdhub-width", 50, 300,
       function (pct) {
         container.style.maxWidth = (pct === 100) ? "" : (baseW * pct / 100).toFixed(0) + "px";
       });
