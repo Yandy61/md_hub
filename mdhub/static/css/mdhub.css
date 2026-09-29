@@ -288,6 +288,7 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-so
   color: var(--faint);
   font-size: 10px;
 }
+.entry-root .btn-unshare { margin-left: auto; }  /* 目录头行的取消共享按钮靠右 */
 .file-list {
   list-style: none; margin: 0; padding: 0;
   border: 1px solid var(--border);

@@ -64,6 +64,16 @@
       var root = document.createElement("div");
       root.className = "entry-root";
       root.textContent = e.path + (e.missing ? "  ⚠ 源丢失" : "");
+      if (isAdmin && e.type === "dir" && e.id) {
+        // 文件夹级取消共享：一次解除整个目录的索引（不碰文件夹内任何文件）
+        var dirBtn = document.createElement("button");
+        dirBtn.className = "btn-unshare";
+        dirBtn.textContent = "取消共享文件夹";
+        dirBtn.addEventListener("click", function () {
+          if (window.MdHubAdmin) { window.MdHubAdmin.removeEntry(e.id, false); }
+        });
+        root.appendChild(dirBtn);
+      }
       block.appendChild(root);
       var ul = document.createElement("ul");
       ul.className = "file-list";

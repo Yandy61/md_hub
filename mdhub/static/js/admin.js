@@ -66,7 +66,7 @@
   function removeEntry(id, isWorkspaceFile) {
     var msg = isWorkspaceFile
       ? "删除该文件？（服务内新建的文件，将删除真实文件且不可恢复）"
-      : "取消共享该条目？（仅解除索引，不修改原文件）";
+      : "取消共享该条目？（仅解除索引，不会修改/删除源文件或文件夹内的任何内容）";
     if (!window.confirm(msg)) return;
     var url = isWorkspaceFile ? "/api/file/" + id : "/api/entry/" + id;
     api("DELETE", url).then(function (res) {
