@@ -7,7 +7,7 @@ from flask import Flask, jsonify, request, send_file, send_from_directory, sessi
 from mdhub import config
 from mdhub.reader import read_text
 from mdhub.registry import Registry
-from mdhub.scanner import is_excluded, scan_dir
+from mdhub.scanner import is_doc_file, is_excluded, scan_dir
 
 
 def _within(real_target, base):
@@ -170,7 +170,7 @@ def create_app():
             full = os.path.join(current, name)
             if os.path.isdir(full):
                 dirs.append({"name": name, "path": os.path.realpath(full)})
-            elif os.path.isfile(full) and name.endswith(".md"):
+            elif os.path.isfile(full) and is_doc_file(name):
                 files.append({"name": name, "path": os.path.realpath(full)})
         dirs.sort(key=lambda d: d["name"].lower())
         files.sort(key=lambda f: f["name"].lower())

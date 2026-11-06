@@ -18,6 +18,10 @@
     return /\.md$/i.test(url.split("#")[0]);
   }
 
+  function isHtmlLink(url) {
+    return /\.html?$/i.test(url.split("#")[0]);
+  }
+
   // 从 /doc/<eid>/<subpath...> 解构出各 API URL（doc.js 与 editor.js 共用）
   function apiParts(pathname) {
     var parts = pathname.split("/").filter(Boolean);
@@ -61,7 +65,7 @@
           var token = tokens[idx];
           var url = token.attrGet(attr);
           if (url && !isExternal(url)) {
-            if (isLink && docBase && isMarkdownLink(url)) {
+            if (isLink && docBase && (isMarkdownLink(url) || isHtmlLink(url))) {
               token.attrSet(attr, docBase + url);
             } else {
               token.attrSet(attr, assetUrl(prefix, url));
@@ -163,6 +167,7 @@
     enhance: enhance,
     apiParts: apiParts,
     escapeUnderscoreInText: escapeUnderscoreInText,
+    isHtmlLink: isHtmlLink,
   };
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;   // node 冒烟脚本

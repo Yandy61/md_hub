@@ -20,15 +20,42 @@
     }
   }
 
+  function isHtmlPath(path) {
+    return /\.html?$/i.test(path || "");
+  }
+
   function draw(data) {
     missing = false;
     currentMtime = data.mtime; currentSize = data.size;
     pathEl.textContent = data.path;
+    if (isHtmlPath(data.path)) {
+      // HTML 文档：iframe 沙箱渲染（样式隔离，脚本随 sandbox 属性受限执行）
+      drawHtml(data);
+      return;
+    }
     bodyEl.innerHTML = MdRender.renderMarkdown(data.text, window.markdownit, window.hljs, {
       assetPrefix: P.assetPrefix,
       docBase: P.docBase,
     });
     MdRender.enhance(bodyEl);
+  }
+
+  function drawHtml(data) {
+    // 相对资源（css/js/img）经 srcdoc 内无法直接解析，改为 blob URL 上下文：
+    // 通过 /doc/ 相对链接重写后，iframe 内相对路径自然落在 /doc/<eid>/<dir>/ 下由资源端点服务。
+    var blob = new Blob([data.text], { type: "text/html" });
+    if (drawHtml.prevUrl) { URL.revokeObjectURL(drawHtml.prevUrl); }
+    drawHtml.prevUrl = URL.createObjectURL(blob);
+    // iframe 高度跟随内容：用 scroll 事件近似自适应
+    bodyEl.innerHTML = '<iframe id="html-frame" class="html-frame" sandbox="allow-same-origin"></iframe>';
+    var frame = document.getElementById("html-frame");
+    frame.src = drawHtml.prevUrl;
+    frame.addEventListener("load", function () {
+      try {
+        var d = frame.contentDocument;
+        if (d && d.body) { frame.style.height = Math.max(400, d.body.scrollHeight + 40) + "px"; }
+      } catch (e) { /* 跨域沙箱则保持默认高度 */ }
+    });
   }
 
   function poll() {
