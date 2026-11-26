@@ -1,6 +1,7 @@
 """MarkdownHub — 内网 markdown 分享服务（Flask 应用工厂）。"""
 import functools
 import os
+import secrets
 
 from flask import Flask, jsonify, request, send_file, send_from_directory, session
 
@@ -28,6 +29,7 @@ def create_app():
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Strict",
         BROWSE_ROOT=os.path.expanduser("~"),
+        PUBLISH_DIR=cfg.get("publish_dir") or config.PUBLISH_DIR,
     )
     app.secret_key = cfg["secret_key"]
     registry = Registry(config.REGISTRY_PATH)
@@ -66,6 +68,37 @@ def create_app():
     def logout():
         session.clear()
         return jsonify({"authenticated": False})
+
+    def publish_token_valid():
+        """推送令牌校验：CLI 端用 token 而非密码做机器凭证。"""
+        tok = request.headers.get("X-Publish-Token", "")
+        expected = config.load_config().get("publish_token")
+        return bool(expected) and secrets.compare_digest(tok, expected)
+
+    @app.post("/api/publish")
+    def publish():
+        """文档推送接口：本机 CLI 把 md/html 推到服务端 published/ 并自动索引。
+
+        幂等：同名（同相对路径）重复推送 = 更新内容，条目 id 不变。
+        """
+        if not publish_token_valid():
+            return jsonify({"error": "invalid publish token"}), 401
+        body = request.get_json(silent=True) or {}
+        name = (body.get("name") or "").strip()
+        text = body.get("text")
+        if not name or text is None:
+            return jsonify({"error": "name and text required"}), 400
+        if not name.lower().endswith((".md", ".html", ".htm")):
+            return jsonify({"error": "only .md/.html files"}), 400
+        pdir = os.path.abspath(app.config["PUBLISH_DIR"])
+        target = os.path.realpath(os.path.join(pdir, name))
+        if not (target == pdir or target.startswith(pdir + os.sep)):
+            return jsonify({"error": "path outside publish dir"}), 400
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        with open(target, "w", encoding="utf-8") as f:
+            f.write(text)
+        entry = registry.add(target, "file", created_in_service=True)
+        return jsonify({"entry": entry, "url": "/doc/" + entry["id"] + "/"}), 201
 
     @app.post("/api/entry")
     @admin_required

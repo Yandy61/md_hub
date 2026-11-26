@@ -15,6 +15,7 @@ REGISTRY_PATH = os.path.join(DATA_DIR, "registry.json")
 WORKSPACE_DIR = os.path.join(PROJECT_ROOT, "workspace")
 BACKUP_DIR = os.path.join(DATA_DIR, "backups")
 LOG_DIR = os.path.join(PROJECT_ROOT, "logs")
+PUBLISH_DIR = os.path.join(PROJECT_ROOT, "published")
 
 DEFAULT_CONFIG = {
     "host": "0.0.0.0",
@@ -24,6 +25,8 @@ DEFAULT_CONFIG = {
     "username": "admin",
     "password_hash": None,
     "secret_key": None,
+    "publish_dir": PUBLISH_DIR,
+    "publish_token": None,
 }
 
 
@@ -68,5 +71,16 @@ def set_password(username, password, path=CONFIG_PATH):
     cfg["username"] = username
     cfg["password_hash"] = hash_password(password)
     cfg["secret_key"] = secrets.token_hex(32)  # 换密后旧会话全部失效
+    if not cfg.get("publish_token"):
+        cfg["publish_token"] = secrets.token_hex(24)
     atomic_write_json(path, cfg)
     return cfg
+
+
+def get_or_create_publish_token(path=CONFIG_PATH):
+    """返回推送令牌；不存在则生成。用于 CLI 端配置（代替密码做机器凭证）。"""
+    cfg = load_config(path)
+    if not cfg.get("publish_token"):
+        cfg["publish_token"] = secrets.token_hex(24)
+        atomic_write_json(path, cfg)
+    return cfg["publish_token"]

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""MarkdownHub 管理命令入口：set_password 设置管理员凭证。"""
+"""MarkdownHub 管理命令入口：set_password / token。"""
 import argparse
 import getpass
 import sys
@@ -15,6 +15,8 @@ def main():
     sp.add_argument("--username", default="admin")
     sp.add_argument("--password", default=None, help="不传则交互式输入")
 
+    sub.add_parser("token", help="显示推送令牌（无则生成），供本机 push CLI 配置")
+
     args = parser.parse_args()
     if args.command == "set_password":
         password = args.password or getpass.getpass("输入密码: ")
@@ -23,6 +25,8 @@ def main():
             sys.exit(1)
         config.set_password(args.username, password)
         print(f"已设置管理员 {args.username} 的凭证（PBKDF2 哈希已写入 config.json）")
+    elif args.command == "token":
+        print(config.get_or_create_publish_token())
 
 
 if __name__ == "__main__":
